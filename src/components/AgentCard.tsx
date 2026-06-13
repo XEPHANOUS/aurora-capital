@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Agent } from '@/lib/types';
+import type { Agent, AgentType } from '@/lib/types';
 import { 
   Newspaper, 
   TrendUp, 
@@ -10,7 +10,8 @@ import {
   Archive, 
   Coins, 
   Crown,
-  Eye
+  Eye,
+  MagnifyingGlass
 } from '@phosphor-icons/react';
 
 interface AgentCardProps {
@@ -18,7 +19,7 @@ interface AgentCardProps {
   onClick?: () => void;
 }
 
-const agentIcons = {
+const agentIcons: Record<AgentType, React.ElementType> = {
   news: Newspaper,
   technical: TrendUp,
   risk: ShieldWarning,
@@ -27,9 +28,10 @@ const agentIcons = {
   investor: Coins,
   director: Crown,
   supervisor: Eye,
+  auditor: MagnifyingGlass,
 };
 
-const agentColors = {
+const agentColors: Record<AgentType, string> = {
   news: 'text-primary',
   technical: 'text-accent',
   risk: 'text-yellow-400',
@@ -38,6 +40,7 @@ const agentColors = {
   investor: 'text-emerald-400',
   director: 'text-amber-400',
   supervisor: 'text-cyan-400',
+  auditor: 'text-purple-400',
 };
 
 export function AgentCard({ agent, onClick }: AgentCardProps) {

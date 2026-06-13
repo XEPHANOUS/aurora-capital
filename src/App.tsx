@@ -12,9 +12,10 @@ import { SurvivalGauge } from '@/components/SurvivalGauge';
 import { Sparkline } from '@/components/Sparkline';
 import { DecisionCenter } from '@/components/DecisionCenter';
 import { ProductionDecisionCenter } from '@/components/ProductionDecisionCenter';
+import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig } from '@/lib/types';
+import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile } from '@/lib/types';
 import { 
   DEFAULT_CONFIG, 
   initializeAgents, 
@@ -31,6 +32,7 @@ import {
   formatDate,
   generateTrendData
 } from '@/lib/mockData';
+import { DEFAULT_ORGANIZATION_CONFIG } from '@/lib/organizationProfiles';
 
 function App() {
   const [config, setConfig] = useKV<SystemConfig>('aurora-config', DEFAULT_CONFIG);
@@ -74,6 +76,24 @@ function App() {
   
   const handleSimulationToggle = (enabled: boolean) => {
     setConfig((prev) => prev ? { ...prev, simulationMode: enabled } : DEFAULT_CONFIG);
+  };
+  
+  const handleUpdateAgent = (agentId: AgentType, updates: Partial<Agent>) => {
+    setAgents((prevAgents) => 
+      prevAgents ? prevAgents.map(agent => 
+        agent.id === agentId ? { ...agent, ...updates } : agent
+      ) : []
+    );
+  };
+  
+  const handleProfileChange = (profile: OrganizationalProfile) => {
+    setConfig((prev) => prev ? {
+      ...prev,
+      organization: {
+        ...(prev.organization ?? DEFAULT_ORGANIZATION_CONFIG),
+        profile
+      }
+    } : DEFAULT_CONFIG);
   };
   
   const handleApproveProposal = () => {
@@ -540,6 +560,16 @@ function App() {
           </TabsContent>
           
           <TabsContent value="settings" className="space-y-6">
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-heading font-semibold text-lg mb-4">AGENT ASSIGNMENT & ORGANIZATION</h3>
+              <AgentAssignmentConfig 
+                agents={agents}
+                onUpdateAgent={handleUpdateAgent}
+                onProfileChange={handleProfileChange}
+                currentProfile={config.organization?.profile ?? 'balanced'}
+              />
+            </Card>
+            
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-heading font-semibold text-lg mb-4">CONFIGURACIÓN DEL SISTEMA</h3>
               

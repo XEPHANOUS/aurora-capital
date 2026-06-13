@@ -6,9 +6,35 @@ export type AgentType =
   | 'archivist'
   | 'investor'
   | 'director'
-  | 'supervisor';
+  | 'supervisor'
+  | 'auditor';
 
 export type AgentStatus = 'active' | 'idle' | 'analyzing' | 'alert';
+
+export type AIAgentType = 'llm' | 'rule-based' | 'hybrid';
+
+export type LLMProvider = 'openai' | 'anthropic' | 'ollama' | 'lmstudio' | 'local';
+
+export type LLMModel = 
+  | 'gpt-4o'
+  | 'gpt-4o-mini'
+  | 'gpt-4-turbo'
+  | 'claude-3-opus'
+  | 'claude-3-sonnet'
+  | 'claude-3-haiku'
+  | 'llama-3-70b'
+  | 'llama-3-8b'
+  | 'mistral-large'
+  | 'mixtral-8x7b'
+  | 'custom';
+
+export interface AgentModelConfig {
+  provider: LLMProvider;
+  model: LLMModel;
+  temperature: number;
+  contextSize: number;
+  maxTokens?: number;
+}
 
 export interface Agent {
   id: AgentType;
@@ -18,6 +44,11 @@ export interface Agent {
   status: AgentStatus;
   lastAction?: string;
   confidence?: number;
+  agentType: AIAgentType;
+  modelConfig?: AgentModelConfig;
+  priority: number;
+  influence: number;
+  reportsTo?: AgentType;
 }
 
 export type OperationType = 'BUY' | 'SELL' | 'HOLD' | 'REDUCE POSITION' | 'INCREASE POSITION';
@@ -68,6 +99,26 @@ export interface InvestmentProposal {
   directorReason?: string;
 }
 
+export type OrganizationalProfile = 'conservative' | 'balanced' | 'aggressive' | 'survival-first';
+
+export interface ProfileWeights {
+  director: number;
+  auditor: number;
+  risk: number;
+  news: number;
+  technical: number;
+  archivist: number;
+  investor: number;
+  survival: number;
+  supervisor: number;
+}
+
+export interface OrganizationConfig {
+  profile: OrganizationalProfile;
+  customWeights?: ProfileWeights;
+  hierarchy: Record<AgentType, AgentType | null>;
+}
+
 export interface SystemConfig {
   simulationMode: boolean;
   totalCapital: number;
@@ -81,6 +132,7 @@ export interface SystemConfig {
     survivalVeto: boolean;
     dailyReport: boolean;
   };
+  organization?: OrganizationConfig;
 }
 
 export interface MarketSentiment {

@@ -20,41 +20,117 @@ export const AGENT_DEFINITIONS: Record<AgentType, Omit<Agent, 'reputation' | 'st
     id: 'news',
     name: 'Noticias',
     description: 'Analiza noticias y sentimiento',
+    agentType: 'llm',
+    priority: 60,
+    influence: 70,
+    reportsTo: 'supervisor',
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      temperature: 0.7,
+      contextSize: 4096,
+    }
   },
   technical: {
     id: 'technical',
     name: 'Técnico',
     description: 'Analiza gráficos e indicadores',
+    agentType: 'hybrid',
+    priority: 70,
+    influence: 75,
+    reportsTo: 'supervisor',
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.5,
+      contextSize: 8192,
+    }
   },
   risk: {
     id: 'risk',
     name: 'Riesgo',
     description: 'Calcula exposición y tamaño',
+    agentType: 'rule-based',
+    priority: 90,
+    influence: 85,
+    reportsTo: 'supervisor',
   },
   survival: {
     id: 'survival',
     name: 'Supervivencia',
     description: 'Protege reserva y capital mínimo',
+    agentType: 'rule-based',
+    priority: 100,
+    influence: 95,
+    reportsTo: 'director',
   },
   archivist: {
     id: 'archivist',
     name: 'Archivista',
     description: 'Almacena histórico y aprendizaje',
+    agentType: 'hybrid',
+    priority: 50,
+    influence: 80,
+    reportsTo: 'supervisor',
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.3,
+      contextSize: 16384,
+    }
   },
   investor: {
     id: 'investor',
     name: 'Inversor',
     description: 'Crea propuestas de inversión',
+    agentType: 'llm',
+    priority: 80,
+    influence: 70,
+    reportsTo: 'director',
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.6,
+      contextSize: 8192,
+    }
   },
   director: {
     id: 'director',
     name: 'Director',
     description: 'Toma decisión final',
+    agentType: 'llm',
+    priority: 100,
+    influence: 80,
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o',
+      temperature: 0.4,
+      contextSize: 16384,
+    }
   },
   supervisor: {
     id: 'supervisor',
     name: 'Supervisor',
     description: 'Coordina y detecta anomalías',
+    agentType: 'hybrid',
+    priority: 85,
+    influence: 75,
+    reportsTo: 'director',
+    modelConfig: {
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      temperature: 0.5,
+      contextSize: 8192,
+    }
+  },
+  auditor: {
+    id: 'auditor',
+    name: 'Auditor',
+    description: 'Verifica cumplimiento y calidad de decisiones',
+    agentType: 'rule-based',
+    priority: 95,
+    influence: 90,
+    reportsTo: 'director',
   },
 };
 
@@ -217,6 +293,10 @@ function getAgentVoteReason(agentType: AgentType, positive: boolean): string {
       positive: 'Sin anomalías',
       negative: 'Comportamiento inusual detectado',
     },
+    auditor: {
+      positive: 'Cumple normativa y procesos',
+      negative: 'Incumplimiento detectado',
+    },
   };
   
   return positive ? reasons[agentType].positive : reasons[agentType].negative;
@@ -256,6 +336,7 @@ export function generateMockOperations(): Operation[] {
         investor: true,
         director: status === 'executed',
         supervisor: Math.random() > 0.2,
+        auditor: Math.random() > 0.35,
       },
       vetoReason: status === 'vetoed' ? 'Operación amenaza reserva de supervivencia' : undefined,
     });
