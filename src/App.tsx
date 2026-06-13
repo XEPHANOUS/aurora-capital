@@ -19,6 +19,10 @@ import { EnvironmentSwitcher } from '@/components/EnvironmentSwitcher';
 import { EnvironmentDashboard } from '@/components/EnvironmentDashboard';
 import { StrategyPromotionPanel } from '@/components/StrategyPromotionPanel';
 import { RealTradingConfirmationModal } from '@/components/RealTradingConfirmationModal';
+import { MarketIntelligenceCenter } from '@/components/MarketIntelligenceCenter';
+import { CapitalFlowEngine } from '@/components/CapitalFlowEngine';
+import { GlobalOpportunityScanner } from '@/components/GlobalOpportunityScanner';
+import { MacroEconomyDashboard } from '@/components/MacroEconomyDashboard';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType, RealTradingConfirmation } from '@/lib/types';
@@ -38,6 +42,20 @@ import {
   formatDate,
   generateTrendData
 } from '@/lib/mockData';
+import {
+  generateCryptoAssets,
+  generateStockAssets,
+  generateETFAssets,
+  generateForexAssets,
+  generateCommodityAssets,
+  generateIndexAssets,
+  generateRealEstateAssets,
+  generateMacroData,
+  generateCapitalFlows,
+  generateSectorRotation,
+  generateGlobalOpportunities,
+} from '@/lib/services/marketDataGenerator';
+import type { Asset } from '@/lib/marketIntelligence';
 import { DEFAULT_ORGANIZATION_CONFIG } from '@/lib/organizationProfiles';
 import { initializeLearningEngine, initializeAgentPerformance } from '@/lib/services/learningEngine';
 import { DEFAULT_ENVIRONMENT_BALANCES, getEnvironmentConfig, ENVIRONMENT_CONFIGS } from '@/lib/services/environmentManager';
@@ -135,6 +153,29 @@ function App() {
   const [news] = useState<NewsItem[]>(generateMockNews());
   const [sentiment] = useState(generateMarketSentiment());
   const [performanceData] = useState(generateTrendData());
+  
+  const [cryptoAssets] = useState(generateCryptoAssets());
+  const [stockAssets] = useState(generateStockAssets());
+  const [etfAssets] = useState(generateETFAssets());
+  const [forexAssets] = useState(generateForexAssets());
+  const [commodityAssets] = useState(generateCommodityAssets());
+  const [indexAssets] = useState(generateIndexAssets());
+  const [realEstateAssets] = useState(generateRealEstateAssets());
+  const [macroData] = useState(generateMacroData());
+  const [capitalFlows] = useState(generateCapitalFlows());
+  const [sectorRotation] = useState(generateSectorRotation());
+  
+  const allAssets: Asset[] = [
+    ...cryptoAssets,
+    ...stockAssets,
+    ...etfAssets,
+    ...forexAssets,
+    ...commodityAssets,
+    ...indexAssets,
+    ...realEstateAssets,
+  ];
+  
+  const [globalOpportunities] = useState(generateGlobalOpportunities(allAssets));
   
   useEffect(() => {
     if (!agents || agents.length === 0) {
@@ -356,15 +397,19 @@ function App() {
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="intelligence">Market Intelligence</TabsTrigger>
+            <TabsTrigger value="opportunities">Global Opportunities</TabsTrigger>
+            <TabsTrigger value="capitalflow">Capital Flow</TabsTrigger>
+            <TabsTrigger value="macro">Macro Economy</TabsTrigger>
             <TabsTrigger value="environments">Entornos</TabsTrigger>
-            <TabsTrigger value="consensus">Enhanced Consensus</TabsTrigger>
-            <TabsTrigger value="learning">Learning & Performance</TabsTrigger>
-            <TabsTrigger value="production">Centro Producción</TabsTrigger>
-            <TabsTrigger value="decisions">Decision Center</TabsTrigger>
-            <TabsTrigger value="market">Análisis de Mercado</TabsTrigger>
-            <TabsTrigger value="agents">Vista de Agentes</TabsTrigger>
+            <TabsTrigger value="consensus">Consensus</TabsTrigger>
+            <TabsTrigger value="learning">Learning</TabsTrigger>
+            <TabsTrigger value="production">Producción</TabsTrigger>
+            <TabsTrigger value="decisions">Decisions</TabsTrigger>
+            <TabsTrigger value="market">Mercado</TabsTrigger>
+            <TabsTrigger value="agents">Agentes</TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
+            <TabsTrigger value="settings">Config</TabsTrigger>
           </TabsList>
           
           <TabsContent value="dashboard" className="space-y-6">
@@ -566,6 +611,38 @@ function App() {
             </Card>
           </TabsContent>
           
+          <TabsContent value="intelligence">
+            <MarketIntelligenceCenter
+              cryptoAssets={cryptoAssets}
+              stockAssets={stockAssets}
+              etfAssets={etfAssets}
+              forexAssets={forexAssets}
+              commodityAssets={commodityAssets}
+              indexAssets={indexAssets}
+              realEstateAssets={realEstateAssets}
+            />
+          </TabsContent>
+
+          <TabsContent value="opportunities">
+            <GlobalOpportunityScanner opportunities={globalOpportunities} />
+          </TabsContent>
+
+          <TabsContent value="capitalflow">
+            <CapitalFlowEngine
+              capitalFlows={capitalFlows}
+              sectorRotation={sectorRotation}
+              riskAppetite={{
+                level: 65 + Math.random() * 20,
+                trend: Math.random() > 0.5 ? 'increasing' : Math.random() > 0.5 ? 'decreasing' : 'stable',
+                indicators: ['VIX Low', 'High Yield Spreads Tight', 'Risk-On Sentiment'],
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="macro">
+            <MacroEconomyDashboard macroData={macroData} />
+          </TabsContent>
+
           <TabsContent value="consensus">
             <EnhancedConsensusEngine 
               agents={agents}
@@ -595,7 +672,7 @@ function App() {
             />
           </TabsContent>
           
-          <TabsContent value="market" className="space-y-6">
+          <TabsContent value="environments" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm">
                 <h3 className="font-heading font-semibold text-lg mb-4">RESUMEN DE MERCADO</h3>
