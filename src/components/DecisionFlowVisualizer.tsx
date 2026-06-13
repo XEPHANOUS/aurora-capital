@@ -13,12 +13,12 @@ import {
   XCircle,
   Warning
 } from '@phosphor-icons/react';
-import type { Icon } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import type { DetailedAgentRecommendation } from '@/lib/types';
+import type { ComponentType } from 'react';
 
-const AGENT_ICONS: Record<string, Icon> = {
+const AGENT_ICONS: Record<string, ComponentType<any>> = {
   news: Brain,
   technical: ChartLine,
   risk: TrendUp,

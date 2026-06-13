@@ -16,8 +16,8 @@ import type {
   Portfolio,
   EnvironmentType
 } from '../types';
-import { DataProviderFactory } from '../services/dataProviders';
-import { PortfolioManager } from '../services/portfolioManager';
+import { DataProviderFactory } from './dataProviders';
+import { PortfolioManager } from './portfolioManager';
 
 export class DecisionEngine {
   static generateAgentVotes(
