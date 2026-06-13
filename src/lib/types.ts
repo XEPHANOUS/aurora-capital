@@ -20,7 +20,7 @@ export interface Agent {
   confidence?: number;
 }
 
-export type OperationType = 'BUY' | 'SELL' | 'HOLD';
+export type OperationType = 'BUY' | 'SELL' | 'HOLD' | 'REDUCE POSITION' | 'INCREASE POSITION';
 
 export type OperationStatus = 'pending' | 'approved' | 'vetoed' | 'executed' | 'cancelled';
 
@@ -90,10 +90,14 @@ export interface MarketSentiment {
   lastUpdate: string;
 }
 
+export type DecisionAction = 'BUY' | 'SELL' | 'HOLD' | 'REDUCE POSITION' | 'INCREASE POSITION' | 'VETO';
+export type MarketRegime = 'bull' | 'bear' | 'sideways' | 'high-volatility' | 'low-volatility';
+
 export interface AgentRecommendation {
   agentId: AgentType;
   agentName: string;
   recommendation: 'approve' | 'reject' | 'veto' | 'neutral';
+  decisionAction: DecisionAction;
   confidence: number;
   reasoning: string;
   timestamp: string;
@@ -161,10 +165,63 @@ export type DetailedAgentRecommendation =
   | InvestorAgentRecommendation
   | DirectorAgentRecommendation;
 
+export interface HistoricalTrade {
+  asset: string;
+  action: OperationType;
+  amount: number;
+  outcome: 'success' | 'failure';
+  return: number;
+  date: string;
+}
+
+export interface SurvivalMetrics {
+  currentCapital: number;
+  survivalReserve: number;
+  maxDrawdown: number;
+  dailyLossLimit: number;
+  riskAfterTrade: number;
+  survivalProbability: number;
+}
+
+export interface RiskMetrics {
+  positionSize: number;
+  stopLoss: number;
+  takeProfit: number;
+  riskRewardRatio: number;
+  maxPotentialLoss: number;
+}
+
+export interface ConflictAnalysis {
+  agreeing: AgentType[];
+  disagreeing: AgentType[];
+  conflicts: Array<{
+    agents: [AgentType, AgentType];
+    reason: string;
+  }>;
+}
+
+export interface DecisionQualityScore {
+  score: number;
+  agentAgreement: number;
+  historicalConfidence: number;
+  marketConditions: number;
+  survivalSafety: number;
+  quality: 'low' | 'medium' | 'high';
+}
+
+export interface WeightedVote {
+  agentId: AgentType;
+  rawVote: 'approve' | 'reject' | 'veto' | 'neutral';
+  rawConfidence: number;
+  weightedScore: number;
+  weight: number;
+  reputation: number;
+}
+
 export interface DecisionSession {
   id: string;
   timestamp: string;
-  status: 'active' | 'completed' | 'vetoed';
+  status: 'active' | 'completed' | 'vetoed' | 'rejected';
   proposal: {
     asset: string;
     action: OperationType;
@@ -175,7 +232,27 @@ export interface DecisionSession {
     approved: boolean;
     reason: string;
     timestamp: string;
+    executionBlocked?: boolean;
+    blockReason?: string;
   };
   consensusLevel: number;
   duration: number;
+  marketRegime?: MarketRegime;
+  survivalMetrics?: SurvivalMetrics;
+  riskMetrics?: RiskMetrics;
+  conflictAnalysis?: ConflictAnalysis;
+  qualityScore?: DecisionQualityScore;
+  weightedVotes?: WeightedVote[];
+}
+
+export interface LearningRecord {
+  sessionId: string;
+  outcome: 'success' | 'failure' | 'pending';
+  agentPerformance: Record<AgentType, {
+    wasCorrect: boolean;
+    reputationChange: number;
+    newReputation: number;
+  }>;
+  lessons: string[];
+  timestamp: string;
 }
