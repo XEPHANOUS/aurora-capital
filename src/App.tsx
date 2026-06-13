@@ -13,6 +13,7 @@ import { Sparkline } from '@/components/Sparkline';
 import { DecisionCenter } from '@/components/DecisionCenter';
 import { ProductionDecisionCenter } from '@/components/ProductionDecisionCenter';
 import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
+import { ConsensusDemo } from '@/components/ConsensusDemo';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile } from '@/lib/types';
@@ -178,6 +179,7 @@ function App() {
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="consensus">Consensus Engine</TabsTrigger>
             <TabsTrigger value="production">Centro Producción</TabsTrigger>
             <TabsTrigger value="decisions">Decision Center</TabsTrigger>
             <TabsTrigger value="market">Análisis de Mercado</TabsTrigger>
@@ -383,6 +385,14 @@ function App() {
                 ))}
               </div>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="consensus">
+            <ConsensusDemo 
+              agents={agents}
+              config={config}
+              currentCapital={currentCapital}
+            />
           </TabsContent>
           
           <TabsContent value="production">

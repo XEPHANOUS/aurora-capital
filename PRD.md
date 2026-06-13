@@ -61,6 +61,13 @@ This is a sophisticated multi-agent AI system that simulates autonomous investme
 **Progression**: Proposal generated → Agents vote/analyze → Survival check → Director evaluates → Decision rendered → Execution or rejection
 **Success criteria**: Proposal details comprehensive; agent inputs visible; Survival veto clearly marked; decision rationale provided
 
+### Consensus Engine
+**Functionality**: Mathematical voting system that calculates final decisions using Influence × Reputation × Confidence for each agent, with comprehensive veto rules and full calculation breakdown
+**Purpose**: Provides transparent, weighted decision-making that accounts for agent expertise, historical performance, and confidence levels
+**Trigger**: User runs consensus simulation or system evaluates proposal
+**Progression**: Proposal created → Each agent generates vote with confidence → Engine calculates weighted scores (normalizing influence, reputation, confidence) → Veto rules evaluated → Final consensus score computed → Decision explanation generated → Mathematical breakdown displayed
+**Success criteria**: Shows complete calculation breakdown for every agent; displays veto rule status; provides human-readable explanation; mathematical summary visible with all formulas and intermediate steps; consensus score accurately reflects weighted voting
+
 ### Simulation Mode
 **Functionality**: Toggle to run system without real capital at risk; uses virtual starting balance
 **Purpose**: Allows testing strategies and agent tuning without financial risk
