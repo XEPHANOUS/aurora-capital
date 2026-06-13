@@ -256,3 +256,182 @@ export interface LearningRecord {
   lessons: string[];
   timestamp: string;
 }
+
+export type EnvironmentType = 'sandbox' | 'demo' | 'real';
+export type DataProviderType = 'mock' | 'live';
+export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
+
+export interface Portfolio {
+  id: string;
+  name: string;
+  environment: EnvironmentType;
+  balance: number;
+  initialBalance: number;
+  operations: Operation[];
+  statistics: PortfolioStatistics;
+  riskControls: RiskControls;
+  createdAt: string;
+  lastUpdated: string;
+}
+
+export interface PortfolioStatistics {
+  totalTrades: number;
+  successfulTrades: number;
+  failedTrades: number;
+  totalReturn: number;
+  averageReturn: number;
+  maxDrawdown: number;
+  sharpeRatio: number;
+  winRate: number;
+}
+
+export interface RiskControls {
+  maxPositionSize: number;
+  maxDailyLoss: number;
+  maxDrawdown: number;
+  stopLossRequired: boolean;
+  requiresApproval: boolean;
+}
+
+export interface StrategyStatus {
+  environment: EnvironmentType;
+  certified: boolean;
+  tradesCompleted: number;
+  successRate: number;
+  totalReturn: number;
+  certificationDate?: string;
+  nextReviewDate?: string;
+  canPromote: boolean;
+  promotionRequirements?: {
+    minTrades: number;
+    minSuccessRate: number;
+    minReturn: number;
+  };
+}
+
+export interface MarketDataProvider {
+  id: string;
+  name: string;
+  type: DataProviderType;
+  status: ConnectionStatus;
+  lastUpdate?: string;
+  latency?: number;
+  config: {
+    apiKey?: string;
+    baseUrl?: string;
+    updateInterval?: number;
+  };
+}
+
+export interface DataSourceStatus {
+  provider: MarketDataProvider;
+  marketStatus: 'open' | 'closed' | 'pre-market' | 'after-hours' | 'unknown';
+  lastSuccessfulUpdate?: string;
+  errorCount: number;
+  lastError?: string;
+}
+
+export interface AgentVote {
+  agentId: AgentType;
+  recommendedAction: DecisionAction;
+  voteOnProposal: 'APPROVE' | 'REJECT' | 'VETO';
+  confidence: number;
+  reasoning: string;
+}
+
+export interface ConsensusDistribution {
+  buy: number;
+  sell: number;
+  hold: number;
+  reducePosition: number;
+  increasePosition: number;
+  veto: number;
+}
+
+export interface DirectorDecision {
+  finalAction: DecisionAction;
+  consensusScore: number;
+  qualityScore: number;
+  supportingFactors: string[];
+  riskFactors: string[];
+  explanation: string;
+}
+
+export interface SurvivalAnalysis {
+  currentCapital: number;
+  survivalReserve: number;
+  operationalCapital: number;
+  capitalAfterTrade: number;
+  reserveAfterTrade: number;
+  survivalMargin: number;
+  survivalProbability: number;
+  automaticVeto: boolean;
+  vetoReason?: string;
+}
+
+export interface HistoricalAnalysis {
+  similarTrades: HistoricalTrade[];
+  totalSimilar: number;
+  successRate: number;
+  failureRate: number;
+  averageReturn: number;
+  averageLoss: number;
+  lessonsLearned: string[];
+}
+
+export interface ReputationChange {
+  agentId: AgentType;
+  previousReputation: number;
+  currentReputation: number;
+  change: number;
+  reason: string;
+  timestamp: string;
+}
+
+export interface EnhancedRiskMetrics extends RiskMetrics {
+  dailyRiskExposure: number;
+  totalExposure: number;
+  concentrationRisk: number;
+}
+
+export interface APIIntegrationConfig {
+  coinGecko?: {
+    enabled: boolean;
+    apiKey?: string;
+    status: ConnectionStatus;
+    lastCheck?: string;
+  };
+  newsAPI?: {
+    enabled: boolean;
+    apiKey?: string;
+    status: ConnectionStatus;
+    lastCheck?: string;
+  };
+  telegram?: {
+    enabled: boolean;
+    botToken?: string;
+    chatId?: string;
+    status: ConnectionStatus;
+    lastCheck?: string;
+  };
+  rssFeed?: {
+    enabled: boolean;
+    feeds: string[];
+    status: ConnectionStatus;
+    lastCheck?: string;
+  };
+}
+
+export interface EnhancedDecisionSession extends DecisionSession {
+  agentVotes: AgentVote[];
+  consensusDistribution: ConsensusDistribution;
+  directorDecision: DirectorDecision;
+  survivalAnalysis: SurvivalAnalysis;
+  historicalAnalysis?: HistoricalAnalysis;
+  enhancedRiskMetrics?: EnhancedRiskMetrics;
+  dataSource: DataSourceStatus;
+  portfolio: {
+    id: string;
+    environment: EnvironmentType;
+  };
+}
