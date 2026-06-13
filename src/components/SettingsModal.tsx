@@ -121,9 +121,9 @@ export function SettingsModal({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0">
+      <DialogContent className="w-[90vw] max-w-[1400px] h-[85vh] p-0 gap-0">
         <div className="flex h-full">
-          <div className="w-64 border-r border-border bg-card/30 backdrop-blur-sm flex flex-col">
+          <div className="w-[20%] min-w-[220px] border-r border-border bg-card/30 backdrop-blur-sm flex flex-col">
             <div className="p-6 border-b border-border">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-heading font-bold text-xl">CONFIGURACIÓN</h2>
@@ -250,63 +250,65 @@ function GeneralSettings({ config, onSimulationToggle }: {
         </p>
       </div>
       
-      <Card className="p-6 bg-card/50 backdrop-blur-sm">
-        <h4 className="font-heading font-semibold text-lg mb-4">MODO DE OPERACIÓN</h4>
-        
-        <div className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <p className="font-medium mb-1">Modo Simulación</p>
-              <p className="text-sm text-muted-foreground">
-                Ejecutar operaciones en modo simulado sin riesgo real. Desactivar para operar con capital real.
-              </p>
-            </div>
-            <Switch
-              checked={config.simulationMode}
-              onCheckedChange={onSimulationToggle}
-            />
-          </div>
+      <div className="grid grid-cols-2 gap-6">
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">MODO DE OPERACIÓN</h4>
           
-          <Separator />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Inicial</p>
-              <p className="font-mono font-bold text-xl">{formatCurrency(config.totalCapital)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Configurado por entorno</p>
+          <div className="space-y-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="font-medium mb-1">Modo Simulación</p>
+                <p className="text-sm text-muted-foreground">
+                  Ejecutar operaciones en modo simulado sin riesgo real. Desactivar para operar con capital real.
+                </p>
+              </div>
+              <Switch
+                checked={config.simulationMode}
+                onCheckedChange={onSimulationToggle}
+              />
             </div>
             
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Estado del Sistema</p>
-              <Badge variant="outline" className="border-accent text-accent">
-                Activo
-              </Badge>
-              <p className="text-xs text-muted-foreground mt-1">Todos los sistemas operativos</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-      
-      <Card className="p-6 bg-card/50 backdrop-blur-sm">
-        <h4 className="font-heading font-semibold text-lg mb-4">INTEGRACIONES</h4>
-        
-        <div className="space-y-4">
-          <div className="p-4 bg-background/50 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="font-medium mb-1">Telegram</p>
-                <p className="text-xs text-muted-foreground">Notificaciones y control remoto</p>
+            <Separator />
+            
+            <div className="space-y-3">
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Inicial</p>
+                <p className="font-mono font-bold text-xl">{formatCurrency(config.totalCapital)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Configurado por entorno</p>
               </div>
-              <Badge variant="outline" className="border-destructive/50 text-destructive">
-                Desconectado
-              </Badge>
+              
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Estado del Sistema</p>
+                <Badge variant="outline" className="border-accent text-accent">
+                  Activo
+                </Badge>
+                <p className="text-xs text-muted-foreground mt-1">Todos los sistemas operativos</p>
+              </div>
             </div>
-            <Button variant="outline" className="w-full" disabled>
-              Configurar Conexión
-            </Button>
           </div>
-        </div>
-      </Card>
+        </Card>
+        
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">INTEGRACIONES</h4>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-background/50 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="font-medium mb-1">Telegram</p>
+                  <p className="text-xs text-muted-foreground">Notificaciones y control remoto</p>
+                </div>
+                <Badge variant="outline" className="border-destructive/50 text-destructive">
+                  Desconectado
+                </Badge>
+              </div>
+              <Button variant="outline" className="w-full" disabled>
+                Configurar Conexión
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -351,71 +353,72 @@ function ConsensusSettings({ config }: { config: SystemConfig }) {
         </p>
       </div>
       
-      <Card className="p-6 bg-card/50 backdrop-blur-sm">
-        <h4 className="font-heading font-semibold text-lg mb-4">CONFIGURACIÓN DE CONSENSO</h4>
+      <div className="grid grid-cols-2 gap-6">
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">CONFIGURACIÓN DE CONSENSO</h4>
+          
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Umbral Mínimo</p>
+                <p className="font-mono font-bold text-xl">60%</p>
+                <p className="text-xs text-muted-foreground mt-1">Consenso requerido</p>
+              </div>
+              
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Sistema de Veto</p>
+                <Badge variant="outline" className="border-accent text-accent">
+                  Activo
+                </Badge>
+                <p className="text-xs text-muted-foreground mt-1">3 agentes con veto</p>
+              </div>
+              
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Director Override</p>
+                <Badge variant="outline" className="border-warning text-warning">
+                  Habilitado
+                </Badge>
+                <p className="text-xs text-muted-foreground mt-1">Autoridad máxima</p>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div>
+              <h5 className="font-medium mb-3">Fórmula de Votación</h5>
+              <div className="p-4 bg-background/50 rounded-lg font-mono text-sm">
+                <p className="mb-2">Weighted Vote = <span className="text-primary">Influence</span> × <span className="text-accent">Reputation</span> × <span className="text-warning">Confidence</span></p>
+                <p className="text-xs text-muted-foreground">
+                  El consenso final se calcula sumando los votos ponderados de todos los agentes
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
         
-        <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Umbral Mínimo</p>
-              <p className="font-mono font-bold text-xl">60%</p>
-              <p className="text-xs text-muted-foreground mt-1">Consenso requerido</p>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">AGENTES CON PODER DE VETO</h4>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+              <span className="text-sm font-medium">Supervivencia</span>
+              <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
             </div>
-            
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Sistema de Veto</p>
-              <Badge variant="outline" className="border-accent text-accent">
-                Activo
-              </Badge>
-              <p className="text-xs text-muted-foreground mt-1">Supervivencia, Riesgo, Auditor</p>
+            <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+              <span className="text-sm font-medium">Riesgo</span>
+              <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
             </div>
-            
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Director Override</p>
-              <Badge variant="outline" className="border-warning text-warning">
-                Habilitado
-              </Badge>
-              <p className="text-xs text-muted-foreground mt-1">Autoridad máxima</p>
+            <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+              <span className="text-sm font-medium">Auditor</span>
+              <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+              <span className="text-sm font-medium">Director</span>
+              <Badge variant="outline" className="border-destructive text-destructive">Override Absoluto</Badge>
             </div>
           </div>
-          
-          <Separator />
-          
-          <div>
-            <h5 className="font-medium mb-3">Fórmula de Votación</h5>
-            <div className="p-4 bg-background/50 rounded-lg font-mono text-sm">
-              <p className="mb-2">Weighted Vote = <span className="text-primary">Influence</span> × <span className="text-accent">Reputation</span> × <span className="text-warning">Confidence</span></p>
-              <p className="text-xs text-muted-foreground">
-                El consenso final se calcula sumando los votos ponderados de todos los agentes
-              </p>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div>
-            <h5 className="font-medium mb-3">Agentes con Poder de Veto</h5>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                <span className="text-sm font-medium">Supervivencia</span>
-                <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                <span className="text-sm font-medium">Riesgo</span>
-                <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                <span className="text-sm font-medium">Auditor</span>
-                <Badge variant="outline" className="border-warning text-warning">Veto Crítico</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                <span className="text-sm font-medium">Director</span>
-                <Badge variant="outline" className="border-destructive text-destructive">Override Absoluto</Badge>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -430,81 +433,82 @@ function TradingSettings({ config }: { config: SystemConfig }) {
         </p>
       </div>
       
-      <Card className="p-6 bg-card/50 backdrop-blur-sm">
-        <h4 className="font-heading font-semibold text-lg mb-4">PARÁMETROS DE RIESGO</h4>
+      <div className="grid grid-cols-2 gap-6">
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">PARÁMETROS DE RIESGO</h4>
+          
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Reserva de Supervivencia</p>
+                <p className="font-mono font-bold text-2xl text-warning">{config.survivalReservePercent}%</p>
+                <p className="text-xs text-muted-foreground mt-1">Capital bloqueado intocable</p>
+              </div>
+              
+              <div className="p-4 bg-background/50 rounded-lg">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Operativo</p>
+                <p className="font-mono font-bold text-2xl text-primary">{100 - config.survivalReservePercent}%</p>
+                <p className="text-xs text-muted-foreground mt-1">Disponible para trading</p>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Riesgo Máximo por Operación</p>
+                  <p className="font-mono font-semibold text-lg">{config.maxRiskPerOperation}%</p>
+                </div>
+                <div className="h-2 bg-background rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-warning rounded-full"
+                    style={{ width: `${config.maxRiskPerOperation}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Del capital operativo</p>
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Límite de Pérdida Diaria</p>
+                  <p className="font-mono font-semibold text-lg">{config.dailyLossLimit}%</p>
+                </div>
+                <div className="h-2 bg-background rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-destructive rounded-full"
+                    style={{ width: `${config.dailyLossLimit}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Freno automático</p>
+              </div>
+            </div>
+          </div>
+        </Card>
         
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Reserva de Supervivencia</p>
-              <p className="font-mono font-bold text-2xl text-warning">{config.survivalReservePercent}%</p>
-              <p className="text-xs text-muted-foreground mt-1">Capital bloqueado intocable</p>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm">
+          <h4 className="font-heading font-semibold text-lg mb-4">PROTECCIONES ACTIVAS</h4>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+              <ShieldCheck size={20} className="text-accent" />
+              <span className="text-sm font-medium">Veto de Supervivencia</span>
             </div>
-            
-            <div className="p-4 bg-background/50 rounded-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Operativo</p>
-              <p className="font-mono font-bold text-2xl text-primary">{100 - config.survivalReservePercent}%</p>
-              <p className="text-xs text-muted-foreground mt-1">Disponible para trading</p>
+            <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+              <ShieldCheck size={20} className="text-accent" />
+              <span className="text-sm font-medium">Control de Riesgo</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+              <ShieldCheck size={20} className="text-accent" />
+              <span className="text-sm font-medium">Auditoría Obligatoria</span>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+              <ShieldCheck size={20} className="text-accent" />
+              <span className="text-sm font-medium">Límite Diario</span>
             </div>
           </div>
-          
-          <Separator />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium">Riesgo Máximo por Operación</p>
-                <p className="font-mono font-semibold text-lg">{config.maxRiskPerOperation}%</p>
-              </div>
-              <div className="h-2 bg-background rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-warning rounded-full"
-                  style={{ width: `${config.maxRiskPerOperation}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Del capital operativo</p>
-            </div>
-            
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium">Límite de Pérdida Diaria</p>
-                <p className="font-mono font-semibold text-lg">{config.dailyLossLimit}%</p>
-              </div>
-              <div className="h-2 bg-background rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-destructive rounded-full"
-                  style={{ width: `${config.dailyLossLimit}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Freno automático</p>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div>
-            <h5 className="font-medium mb-3">Protecciones Activas</h5>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                <ShieldCheck size={20} className="text-accent" />
-                <span className="text-sm font-medium">Veto de Supervivencia</span>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                <ShieldCheck size={20} className="text-accent" />
-                <span className="text-sm font-medium">Control de Riesgo</span>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                <ShieldCheck size={20} className="text-accent" />
-                <span className="text-sm font-medium">Auditoría Obligatoria</span>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                <ShieldCheck size={20} className="text-accent" />
-                <span className="text-sm font-medium">Límite Diario</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
