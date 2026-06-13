@@ -121,9 +121,9 @@ export function SettingsModal({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] max-w-[1400px] h-[85vh] p-0 gap-0 overflow-hidden">
+      <DialogContent className="w-[92vw] max-w-[1600px] h-[88vh] p-0 gap-0 overflow-hidden">
         <div className="flex h-full">
-          <div className="w-[22%] min-w-[240px] border-r border-border bg-card/40 backdrop-blur-sm flex flex-col">
+          <div className="w-64 flex-shrink-0 border-r border-border bg-card/40 backdrop-blur-sm flex flex-col">
             <div className="p-6 border-b border-border/50">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-heading font-bold text-xl tracking-tight">CONFIGURACIÓN</h2>
