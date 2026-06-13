@@ -126,18 +126,18 @@ export function AgentAssignmentConfig({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="assignment" className="space-y-6">
-        <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
-          <TabsTrigger value="assignment">Individual Assignment</TabsTrigger>
-          <TabsTrigger value="organization">Organization Profiles</TabsTrigger>
-          <TabsTrigger value="hierarchy">Hierarchy View</TabsTrigger>
-          <TabsTrigger value="influence">Influence System</TabsTrigger>
+        <TabsList className="bg-card/50 backdrop-blur-sm border border-border w-full justify-start overflow-x-auto flex-nowrap">
+          <TabsTrigger value="assignment" className="whitespace-nowrap">Individual Assignment</TabsTrigger>
+          <TabsTrigger value="organization" className="whitespace-nowrap">Organization Profiles</TabsTrigger>
+          <TabsTrigger value="hierarchy" className="whitespace-nowrap">Hierarchy View</TabsTrigger>
+          <TabsTrigger value="influence" className="whitespace-nowrap">Influence System</TabsTrigger>
         </TabsList>
         
         <TabsContent value="assignment" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <Card className="p-4 bg-card/50 backdrop-blur-sm">
               <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide">Select Agent</h3>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                 {agents.map((a) => {
                   const AgIcon = AGENT_ICONS[a.id];
                   return (
@@ -151,12 +151,12 @@ export function AgentAssignmentConfig({
                           : "bg-background/50 border-border hover:border-primary/50"
                       )}
                     >
-                      <AgIcon size={20} weight={selectedAgent === a.id ? "fill" : "regular"} />
-                      <div className="flex-1 text-left">
-                        <p className="text-sm font-medium">{a.name}</p>
-                        <p className="text-xs text-muted-foreground">{a.description}</p>
+                      <AgIcon size={20} weight={selectedAgent === a.id ? "fill" : "regular"} className="flex-shrink-0" />
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-sm font-medium truncate">{a.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{a.description}</p>
                       </div>
-                      <Badge variant="outline" className={AGENT_TYPE_COLORS[a.agentType]}>
+                      <Badge variant="outline" className={cn(AGENT_TYPE_COLORS[a.agentType], "flex-shrink-0 text-xs")}>
                         {a.agentType}
                       </Badge>
                     </button>
@@ -165,7 +165,7 @@ export function AgentAssignmentConfig({
               </div>
             </Card>
             
-            <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm space-y-6">
+            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <Icon size={24} className="text-primary" />
@@ -347,7 +347,7 @@ export function AgentAssignmentConfig({
         </TabsContent>
         
         <TabsContent value="organization" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(['conservative', 'balanced', 'aggressive', 'survival-first'] as OrganizationalProfile[]).map((profile) => (
               <Card
                 key={profile}
