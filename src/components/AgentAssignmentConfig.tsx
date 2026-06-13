@@ -133,11 +133,11 @@ export function AgentAssignmentConfig({
           <TabsTrigger value="influence" className="whitespace-nowrap">Influence System</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="assignment" className="flex-1 mt-6 min-h-0">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
-            <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col h-full">
+        <TabsContent value="assignment" className="flex-1 mt-6 min-h-0 flex flex-col">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 min-h-0">
+            <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col min-h-0">
               <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide flex-shrink-0">Select Agent</h3>
-              <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+              <div className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0">
                 {agents.map((a) => {
                   const AgIcon = AGENT_ICONS[a.id];
                   return (
@@ -165,7 +165,7 @@ export function AgentAssignmentConfig({
               </div>
             </Card>
             
-            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm flex flex-col h-full">
+            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm flex flex-col min-h-0">
               <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <Icon size={24} className="text-primary" />
@@ -178,7 +178,7 @@ export function AgentAssignmentConfig({
               
               <Separator className="my-6 flex-shrink-0" />
               
-              <div className="space-y-4 overflow-y-auto pr-2 flex-1">
+              <div className="space-y-4 overflow-y-auto pr-2 flex-1 min-h-0">
                 <div>
                   <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Agent Type</Label>
                   <div className="flex gap-2">
@@ -346,82 +346,84 @@ export function AgentAssignmentConfig({
           </div>
         </TabsContent>
         
-        <TabsContent value="organization" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(['conservative', 'balanced', 'aggressive', 'survival-first'] as OrganizationalProfile[]).map((profile) => (
-              <Card
-                key={profile}
-                className={cn(
-                  "p-4 cursor-pointer transition-all border-2",
-                  currentProfile === profile 
-                    ? "bg-primary/10 border-primary" 
-                    : "bg-card/50 backdrop-blur-sm border-border hover:border-primary/50"
-                )}
-                onClick={() => onProfileChange(profile)}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-heading font-semibold text-sm uppercase tracking-wide">
-                      {profile.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                    </h3>
-                    {currentProfile === profile && (
-                      <Badge variant="default" className="text-xs">Active</Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{PROFILE_DESCRIPTIONS[profile]}</p>
-                  
-                  <Separator />
-                  
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Top Influences</p>
-                    {Object.entries(PROFILE_PRESETS[profile])
-                      .sort(([,a], [,b]) => b - a)
-                      .slice(0, 3)
-                      .map(([agentId, weight]) => (
-                        <div key={agentId} className="flex items-center justify-between text-xs">
-                          <span className="capitalize">{agentId}</span>
-                          <span className="font-mono font-semibold">{weight}</span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-          
-          <Card className="p-6 bg-card/50 backdrop-blur-sm">
-            <h3 className="font-heading font-semibold text-lg mb-4">Current Weight Distribution</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {Object.entries(currentWeights).map(([agentId, weight]) => {
-                const AgIcon = AGENT_ICONS[agentId as AgentType];
-                const agentData = agents.find(a => a.id === agentId);
-                return (
-                  <div key={agentId} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <AgIcon size={16} className="text-primary" />
-                      <span className="text-sm font-medium capitalize">{agentData?.name ?? agentId}</span>
+        <TabsContent value="organization" className="flex-1 mt-6 min-h-0 overflow-y-auto">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(['conservative', 'balanced', 'aggressive', 'survival-first'] as OrganizationalProfile[]).map((profile) => (
+                <Card
+                  key={profile}
+                  className={cn(
+                    "p-4 cursor-pointer transition-all border-2",
+                    currentProfile === profile 
+                      ? "bg-primary/10 border-primary" 
+                      : "bg-card/50 backdrop-blur-sm border-border hover:border-primary/50"
+                  )}
+                  onClick={() => onProfileChange(profile)}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-heading font-semibold text-sm uppercase tracking-wide">
+                        {profile.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                      </h3>
+                      {currentProfile === profile && (
+                        <Badge variant="default" className="text-xs">Active</Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary rounded-full transition-all duration-500"
-                          style={{ width: `${weight}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-mono font-semibold w-8">{weight}</span>
+                    <p className="text-xs text-muted-foreground">{PROFILE_DESCRIPTIONS[profile]}</p>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Top Influences</p>
+                      {Object.entries(PROFILE_PRESETS[profile])
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 3)
+                        .map(([agentId, weight]) => (
+                          <div key={agentId} className="flex items-center justify-between text-xs">
+                            <span className="capitalize">{agentId}</span>
+                            <span className="font-mono font-semibold">{weight}</span>
+                          </div>
+                        ))}
                     </div>
                   </div>
-                );
-              })}
+                </Card>
+              ))}
             </div>
-          </Card>
+            
+            <Card className="p-6 bg-card/50 backdrop-blur-sm">
+              <h3 className="font-heading font-semibold text-lg mb-4">Current Weight Distribution</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {Object.entries(currentWeights).map(([agentId, weight]) => {
+                  const AgIcon = AGENT_ICONS[agentId as AgentType];
+                  const agentData = agents.find(a => a.id === agentId);
+                  return (
+                    <div key={agentId} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <AgIcon size={16} className="text-primary" />
+                        <span className="text-sm font-medium capitalize">{agentData?.name ?? agentId}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary rounded-full transition-all duration-500"
+                            style={{ width: `${weight}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-mono font-semibold w-8">{weight}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
         </TabsContent>
         
-        <TabsContent value="hierarchy" className="space-y-6">
+        <TabsContent value="hierarchy" className="flex-1 mt-6 min-h-0 overflow-y-auto">
           <OrganizationHierarchy agents={agents} />
         </TabsContent>
         
-        <TabsContent value="influence" className="space-y-6">
+        <TabsContent value="influence" className="flex-1 mt-6 min-h-0 overflow-y-auto">
           <InfluenceVisualization agents={agents} weights={currentWeights} />
         </TabsContent>
       </Tabs>
@@ -452,53 +454,55 @@ function OrganizationHierarchy({ agents }: { agents: Agent[] }) {
   });
   
   return (
-    <Card className="p-6 bg-card/50 backdrop-blur-sm">
-      <h3 className="font-heading font-semibold text-lg mb-6">Organizational Hierarchy</h3>
-      <div className="space-y-8">
-        {Object.entries(levels).sort(([a], [b]) => Number(a) - Number(b)).map(([level, levelAgents]) => (
-          <div key={level} className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="text-xs">Level {level}</Badge>
-              <Separator className="flex-1" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {levelAgents.map((agent) => {
-                const Icon = AGENT_ICONS[agent.id];
-                const reportsTo = agents.find(a => a.id === agent.reportsTo);
-                const reports = getDirectReports(agent.id, hierarchy);
-                
-                return (
-                  <Card key={agent.id} className="p-4 bg-background/50">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Icon size={20} className="text-primary" />
+    <div className="space-y-6">
+      <Card className="p-6 bg-card/50 backdrop-blur-sm">
+        <h3 className="font-heading font-semibold text-lg mb-6">Organizational Hierarchy</h3>
+        <div className="space-y-8">
+          {Object.entries(levels).sort(([a], [b]) => Number(a) - Number(b)).map(([level, levelAgents]) => (
+            <div key={level} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-xs">Level {level}</Badge>
+                <Separator className="flex-1" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {levelAgents.map((agent) => {
+                  const Icon = AGENT_ICONS[agent.id];
+                  const reportsTo = agents.find(a => a.id === agent.reportsTo);
+                  const reports = getDirectReports(agent.id, hierarchy);
+                  
+                  return (
+                    <Card key={agent.id} className="p-4 bg-background/50">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Icon size={20} className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{agent.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{agent.description}</p>
+                          {reportsTo && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Reports to: <span className="text-primary font-medium">{reportsTo.name}</span>
+                            </p>
+                          )}
+                          {reports.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Manages: <span className="text-accent font-medium">{reports.length} agent{reports.length > 1 ? 's' : ''}</span>
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant="outline" className={AGENT_TYPE_COLORS[agent.agentType]}>
+                          {agent.agentType.split('-')[0]}
+                        </Badge>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{agent.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{agent.description}</p>
-                        {reportsTo && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Reports to: <span className="text-primary font-medium">{reportsTo.name}</span>
-                          </p>
-                        )}
-                        {reports.length > 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            Manages: <span className="text-accent font-medium">{reports.length} agent{reports.length > 1 ? 's' : ''}</span>
-                          </p>
-                        )}
-                      </div>
-                      <Badge variant="outline" className={AGENT_TYPE_COLORS[agent.agentType]}>
-                        {agent.agentType.split('-')[0]}
-                      </Badge>
-                    </div>
-                  </Card>
-                );
-              })}
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+          ))}
+        </div>
+      </Card>
+    </div>
   );
 }
 
