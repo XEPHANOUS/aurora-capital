@@ -16,9 +16,12 @@ import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
 import { LearningDashboard } from '@/components/LearningDashboard';
 import { EnhancedConsensusEngine } from '@/components/EnhancedConsensusEngine';
 import { EnvironmentSwitcher } from '@/components/EnvironmentSwitcher';
+import { EnvironmentDashboard } from '@/components/EnvironmentDashboard';
+import { StrategyPromotionPanel } from '@/components/StrategyPromotionPanel';
+import { RealTradingConfirmationModal } from '@/components/RealTradingConfirmationModal';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType } from '@/lib/types';
+import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType, RealTradingConfirmation } from '@/lib/types';
 import { 
   DEFAULT_CONFIG, 
   initializeAgents, 
@@ -38,6 +41,8 @@ import {
 import { DEFAULT_ORGANIZATION_CONFIG } from '@/lib/organizationProfiles';
 import { initializeLearningEngine, initializeAgentPerformance } from '@/lib/services/learningEngine';
 import { DEFAULT_ENVIRONMENT_BALANCES, getEnvironmentConfig, ENVIRONMENT_CONFIGS } from '@/lib/services/environmentManager';
+import { evaluateEnvironmentReadiness, calculateSystemMaturity } from '@/lib/services/maturityEngine';
+import { toast } from 'sonner';
 
 interface EnvironmentAccount {
   agents: Agent[];
@@ -120,6 +125,11 @@ function App() {
   };
   
   const [proposal, setProposal] = useState<InvestmentProposal | null>(null);
+  const [showRealConfirmation, setShowRealConfirmation] = useState(false);
+  const [realTradingConfirmation, setRealTradingConfirmation] = useKV<RealTradingConfirmation | null>(
+    'aurora-real-trading-confirmation',
+    null
+  );
   
   const [marketPositions] = useState<MarketPosition[]>(generateMockMarketPositions());
   const [news] = useState<NewsItem[]>(generateMockNews());
@@ -242,8 +252,66 @@ function App() {
     }, 2000);
   };
   
+  const handleEnvironmentSwitch = (newEnv: EnvironmentType) => {
+    if (newEnv === 'real') {
+      if (!realTradingConfirmation || new Date(realTradingConfirmation.expiresAt) < new Date()) {
+        setShowRealConfirmation(true);
+        return;
+      }
+    }
+    setCurrentEnvironment(newEnv);
+    toast.success(`Cambiado a entorno ${ENVIRONMENT_CONFIGS[newEnv].name}`);
+  };
+  
+  const handleRealConfirm = () => {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    setRealTradingConfirmation({
+      confirmed: true,
+      timestamp: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      acknowledgedRisks: [
+        'Utilizaré dinero real',
+        'Las pérdidas serán reales',
+        'Las órdenes serán enviadas al exchange',
+        'He leído y acepto los términos',
+      ],
+    });
+    setShowRealConfirmation(false);
+    setCurrentEnvironment('real');
+    toast.success('Entorno REAL activado - Válido por 24 horas');
+  };
+  
+  const handlePromoteStrategy = () => {
+    toast.success('Estrategia promocionada al siguiente entorno');
+  };
+  
+  const environmentStats = (Object.keys(allAccounts || {}) as EnvironmentType[]).map((env) => {
+    const envAccount = allAccounts?.[env] || createDefaultAccount(env);
+    const maturity = calculateSystemMaturity(envAccount.learningState);
+    return {
+      environment: env,
+      capital: envAccount.currentCapital,
+      roi: ((envAccount.currentCapital - envAccount.config.totalCapital) / envAccount.config.totalCapital) * 100,
+      trades: envAccount.learningState.globalStats.totalTrades,
+      winRate: envAccount.learningState.globalStats.winRate / 100,
+      drawdown: Math.abs(envAccount.learningState.globalStats.maxDrawdownPercent / 100),
+      maturityScore: maturity.maturityScore,
+      status: (env === currentEnvironment ? 'active' : envAccount.operations.length > 0 ? 'ready' : 'inactive') as 'active' | 'inactive' | 'ready',
+    };
+  });
+  
+  const currentMaturityStatus = evaluateEnvironmentReadiness(currentEnvironment || 'sandbox', learningState || initializeLearningEngine());
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+    <>
+      <RealTradingConfirmationModal
+        open={showRealConfirmation}
+        onConfirm={handleRealConfirm}
+        onCancel={() => setShowRealConfirmation(false)}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -265,7 +333,7 @@ function App() {
           <div className="flex items-center gap-4">
             <EnvironmentSwitcher
               currentEnvironment={currentEnvironment!}
-              onEnvironmentChange={setCurrentEnvironment}
+              onEnvironmentChange={handleEnvironmentSwitch}
             />
             
             <Badge 
@@ -288,6 +356,7 @@ function App() {
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="environments">Entornos</TabsTrigger>
             <TabsTrigger value="consensus">Enhanced Consensus</TabsTrigger>
             <TabsTrigger value="learning">Learning & Performance</TabsTrigger>
             <TabsTrigger value="production">Centro Producción</TabsTrigger>
@@ -755,9 +824,62 @@ function App() {
               </div>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="environments" className="space-y-6">
+            <EnvironmentDashboard
+              environments={environmentStats}
+              currentEnvironment={currentEnvironment!}
+              onSelectEnvironment={handleEnvironmentSwitch}
+            />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <StrategyPromotionPanel
+                maturityStatus={currentMaturityStatus}
+                onPromote={handlePromoteStrategy}
+              />
+              
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <h3 className="font-heading font-bold text-xl mb-4">ENVIRONMENT FEATURES</h3>
+                <div className="space-y-4">
+                  {(Object.keys(ENVIRONMENT_CONFIGS) as EnvironmentType[]).map((envKey) => {
+                    const envConfig = ENVIRONMENT_CONFIGS[envKey];
+                    return (
+                      <div key={envKey} className="p-4 bg-background/50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xl">{envConfig.icon}</span>
+                          <span className="font-heading font-bold">{envConfig.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">{envConfig.description}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {envConfig.features.realMarketData && (
+                            <Badge variant="secondary" className="text-xs">Datos Reales</Badge>
+                          )}
+                          {envConfig.features.updatesReputation && (
+                            <Badge variant="secondary" className="text-xs">Actualiza Reputación</Badge>
+                          )}
+                          {envConfig.features.generatesOrders && (
+                            <Badge variant="outline" className="text-xs border-warning text-warning">
+                              Genera Órdenes
+                            </Badge>
+                          )}
+                          {envConfig.features.executesOrders && (
+                            <Badge variant="destructive" className="text-xs">Ejecuta Real</Badge>
+                          )}
+                          {envConfig.features.realMoney && (
+                            <Badge variant="destructive" className="text-xs">Capital Real</Badge>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
+    </>
   );
 }
 

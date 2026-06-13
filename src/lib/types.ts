@@ -631,3 +631,78 @@ export interface DecisionExplanation {
   finalDecision: 'APPROVED' | 'REJECTED';
   decisionReason: string;
 }
+
+export interface PromotionRequirements {
+  minTrades: number;
+  minWinRate: number;
+  minProfitFactor: number;
+  maxDrawdown: number;
+  minConsistency: number;
+  minSystemMaturity: number;
+}
+
+export interface SystemMaturityMetrics {
+  totalTrades: number;
+  consistency: number;
+  drawdown: number;
+  winRate: number;
+  profitFactor: number;
+  consensusQuality: number;
+  agentPrecision: number;
+  maturityScore: number;
+}
+
+export interface EnvironmentMaturityStatus {
+  environment: EnvironmentType;
+  maturityScore: number;
+  readyForPromotion: boolean;
+  requirements: PromotionRequirements;
+  currentMetrics: SystemMaturityMetrics;
+  missingRequirements: string[];
+}
+
+export interface ShadowModeComparison {
+  auroraReturn: number;
+  realPortfolioReturn: number;
+  difference: number;
+  alphaGenerated: number;
+  period: string;
+  trades: number;
+}
+
+export interface RealTradingConfirmation {
+  confirmed: boolean;
+  timestamp: string;
+  expiresAt: string;
+  acknowledgedRisks: string[];
+}
+
+export interface EnvironmentSettings {
+  sandbox: {
+    initialCapital: number;
+    learningRate: number;
+  };
+  demo: {
+    initialCapital: number;
+    dataRefreshInterval: number;
+  };
+  paper: {
+    initialCapital: number;
+    orderSimulationDelay: number;
+  };
+  real: {
+    exchangeConnected: boolean;
+    apiKeys: {
+      configured: boolean;
+      lastValidated?: string;
+    };
+    safetyChecks: {
+      requiresConfirmation: boolean;
+      confirmationExpiryHours: number;
+      maxDailyTrades: number;
+      maxTradeSize: number;
+    };
+  };
+  promotionRequirements: PromotionRequirements;
+  apiIntegrations: APIIntegrationConfig;
+}
