@@ -8,9 +8,9 @@ import {
   Database,
   Coins,
   User,
-  ArrowRight,
-  type Icon
+  ArrowRight
 } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { DetailedAgentRecommendation } from '@/lib/types';
 
