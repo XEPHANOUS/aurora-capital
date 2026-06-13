@@ -353,10 +353,12 @@ export function generateDecisionSession(
       trend: Math.random() > 0.4 ? 'up' : Math.random() > 0.5 ? 'down' : 'sideways' as 'up' | 'down' | 'sideways'
     };
     
+    const techRecommendation: 'approve' | 'reject' = indicators.trend === 'up' && indicators.macd === 'bullish' ? 'approve' : 'reject';
     const techRec: TechnicalAgentRecommendation = {
       agentId: 'technical',
       agentName: technicalAgent.name,
-      recommendation: indicators.trend === 'up' && indicators.macd === 'bullish' ? 'approve' : 'reject',
+      recommendation: techRecommendation,
+      decisionAction: mapRecommendationToDecisionAction(techRecommendation, action, 'technical'),
       confidence: 55 + Math.random() * 40,
       reasoning: `RSI en ${indicators.rsi.toFixed(0)}. MACD muestra señal ${indicators.macd}. Tendencia ${indicators.trend === 'up' ? 'alcista' : indicators.trend === 'down' ? 'bajista' : 'lateral'} confirmada.`,
       timestamp: new Date(timestamp.getTime() + 2000).toISOString(),
@@ -371,11 +373,13 @@ export function generateDecisionSession(
   if (riskAgent) {
     const riskScore = 1 + Math.random() * 4;
     const positionSize = Math.min(amount, (currentCapital * config.maxRiskPerOperation) / 100);
+    const riskRecommendation: 'approve' | 'reject' = riskScore < 3 && amount <= positionSize ? 'approve' : 'reject';
     
     const riskRec: RiskAgentRecommendation = {
       agentId: 'risk',
       agentName: riskAgent.name,
-      recommendation: riskScore < 3 && amount <= positionSize ? 'approve' : 'reject',
+      recommendation: riskRecommendation,
+      decisionAction: mapRecommendationToDecisionAction(riskRecommendation, action, 'risk'),
       confidence: 70 + Math.random() * 25,
       reasoning: riskScore < 3 
         ? `Riesgo calculado de ${riskScore.toFixed(1)}/5. Tamaño de posición dentro de límites permitidos.`
@@ -400,10 +404,13 @@ export function generateDecisionSession(
       afterOp > reserve * 1.2 ? 'safe' : 
       afterOp > reserve ? 'warning' : 'critical';
     
+    const survivalRecommendation: 'veto' | 'approve' | 'neutral' = wouldBreachReserve ? 'veto' : survivalStatus === 'safe' ? 'approve' : 'neutral';
+    
     const survivalRec: SurvivalAgentRecommendation = {
       agentId: 'survival',
       agentName: survivalAgent.name,
-      recommendation: wouldBreachReserve ? 'veto' : survivalStatus === 'safe' ? 'approve' : 'neutral',
+      recommendation: survivalRecommendation,
+      decisionAction: mapRecommendationToDecisionAction(survivalRecommendation, action, 'survival'),
       confidence: 100,
       reasoning: wouldBreachReserve 
         ? `VETO ABSOLUTO: Esta operación rompería la reserva de supervivencia. Capital resultante ${formatCurrency(afterOp)} vs. reserva mínima ${formatCurrency(reserve)}.`
@@ -422,11 +429,13 @@ export function generateDecisionSession(
   if (archivistAgent) {
     const similarOps = Math.floor(Math.random() * 20) + 5;
     const successRate = 40 + Math.random() * 50;
+    const archRecommendation: 'approve' | 'reject' = successRate > 60 ? 'approve' : 'reject';
     
     const archRec: ArchivistAgentRecommendation = {
       agentId: 'archivist',
       agentName: archivistAgent.name,
-      recommendation: successRate > 60 ? 'approve' : 'reject',
+      recommendation: archRecommendation,
+      decisionAction: mapRecommendationToDecisionAction(archRecommendation, action, 'archivist'),
       confidence: 50 + Math.random() * 30,
       reasoning: `Análisis de ${similarOps} operaciones similares. Tasa de éxito histórica: ${successRate.toFixed(0)}%. ${successRate > 60 ? 'Patrón favorable identificado.' : 'Patrón de riesgo elevado.'}`,
       timestamp: new Date(timestamp.getTime() + 5000).toISOString(),
@@ -444,6 +453,7 @@ export function generateDecisionSession(
       agentId: 'investor',
       agentName: investorAgent.name,
       recommendation: 'approve',
+      decisionAction: action,
       confidence: 65 + Math.random() * 30,
       reasoning: `Oportunidad identificada en ${asset}. Análisis de riesgo/retorno favorable. Momento óptimo para ${action === 'BUY' ? 'entrada' : 'salida'}.`,
       timestamp: new Date(timestamp.getTime() + 6000).toISOString(),
@@ -487,10 +497,12 @@ export function generateDecisionSession(
   }
   
   if (directorAgent) {
+    const dirRecommendation: 'approve' | 'reject' = finalDecision === 'approved' ? 'approve' : 'reject';
     const dirRec: DirectorAgentRecommendation = {
       agentId: 'director',
       agentName: directorAgent.name,
-      recommendation: finalDecision === 'approved' ? 'approve' : 'reject',
+      recommendation: dirRecommendation,
+      decisionAction: hasVeto ? 'VETO' : mapRecommendationToDecisionAction(dirRecommendation, action, 'director'),
       confidence: combinedConfidence,
       reasoning: explanation,
       timestamp: new Date(timestamp.getTime() + 7000).toISOString(),
@@ -505,6 +517,32 @@ export function generateDecisionSession(
   
   const consensusLevel = (approvals / (approvals + rejections)) * 100;
   
+  const marketRegime = generateMarketRegime();
+  const riskRec = recommendations.find(r => r.agentId === 'risk') as RiskAgentRecommendation | undefined;
+  const currentPrice = 50000 + Math.random() * 20000;
+  
+  const survivalMetrics = calculateSurvivalMetrics(currentCapital, config, amount);
+  const riskMetrics = riskRec ? calculateRiskMetrics(amount, currentPrice, riskRec.riskScore) : undefined;
+  const conflictAnalysis = analyzeConflicts(recommendations);
+  const qualityScore = calculateDecisionQuality(recommendations, survivalMetrics, marketRegime);
+  const weightedVotes = calculateWeightedVotes(recommendations);
+  
+  const executionBlocked = hasVeto || 
+                          survivalMetrics.survivalProbability < 70 ||
+                          consensusLevel < 50 ||
+                          combinedConfidence < 40;
+  
+  let blockReason: string | undefined;
+  if (hasVeto) {
+    blockReason = 'Veto activado por el Agente de Supervivencia';
+  } else if (survivalMetrics.survivalProbability < 70) {
+    blockReason = 'Probabilidad de supervivencia por debajo del umbral mínimo (70%)';
+  } else if (consensusLevel < 50) {
+    blockReason = 'Consenso insuficiente entre agentes (mínimo 50%)';
+  } else if (combinedConfidence < 40) {
+    blockReason = 'Confianza combinada por debajo del umbral mínimo (40%)';
+  }
+  
   return {
     id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timestamp: timestamp.toISOString(),
@@ -516,12 +554,20 @@ export function generateDecisionSession(
     },
     recommendations,
     finalDecision: status !== 'active' ? {
-      approved: finalDecision === 'approved',
-      reason: explanation,
-      timestamp: new Date(timestamp.getTime() + 8000).toISOString()
+      approved: finalDecision === 'approved' && !executionBlocked,
+      reason: executionBlocked && blockReason ? blockReason : explanation,
+      timestamp: new Date(timestamp.getTime() + 8000).toISOString(),
+      executionBlocked,
+      blockReason
     } : undefined,
     consensusLevel,
-    duration: 7 + Math.random() * 5
+    duration: 7 + Math.random() * 5,
+    marketRegime,
+    survivalMetrics,
+    riskMetrics,
+    conflictAnalysis,
+    qualityScore,
+    weightedVotes
   };
 }
 

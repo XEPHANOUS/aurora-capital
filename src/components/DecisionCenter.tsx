@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Brain, 
   TrendUp, 
@@ -17,21 +18,29 @@ import {
   CheckCircle,
   XCircle,
   Warning,
-  ArrowRight,
   ChartLine
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Agent, SystemConfig, DecisionSession, DetailedAgentRecommendation } from '@/lib/types';
+import type { Agent, SystemConfig, DecisionSession, DetailedAgentRecommendation, ArchivistAgentRecommendation } from '@/lib/types';
 import { 
   generateDecisionSession, 
   generateMockDecisionSessions,
   formatCurrency,
   formatPercent,
   DEFAULT_CONFIG,
-  initializeAgents
 } from '@/lib/mockData';
 import { DecisionFlowVisualizer } from '@/components/DecisionFlowVisualizer';
+import {
+  SurvivalMetricsPanel,
+  RiskTransparencyPanel,
+  ConflictAnalysisPanel,
+  WeightedVotesPanel,
+  DecisionQualityPanel,
+  MarketContextPanel,
+  ArchivistIntelligencePanel,
+  ExecutionRulesPanel
+} from '@/components/DecisionPanels';
 
 const AGENT_ICONS: Record<string, ComponentType<any>> = {
   news: Brain,
@@ -210,26 +219,75 @@ export function DecisionCenter({ agents, config, currentCapital }: DecisionCente
 
               <Separator />
 
-              <div>
-                <h4 className="font-heading font-semibold text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <Clock size={16} />
-                  Cadena de Decisión
-                </h4>
-                
-                <ScrollArea className="h-[500px] pr-4">
-                  <div className="space-y-4">
-                    <AnimatePresence>
-                      {sessionToDisplay.recommendations.map((rec, index) => (
-                        <AgentRecommendationCard 
-                          key={`${rec.agentId}-${index}`} 
-                          recommendation={rec}
-                          index={index}
-                        />
-                      ))}
-                    </AnimatePresence>
+              <Tabs defaultValue="chain" className="mt-6">
+                <TabsList className="bg-background/50 border border-border">
+                  <TabsTrigger value="chain">Cadena de Decisión</TabsTrigger>
+                  <TabsTrigger value="analysis">Análisis Avanzado</TabsTrigger>
+                  <TabsTrigger value="metrics">Métricas</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="chain" className="mt-6">
+                  <ScrollArea className="h-[500px] pr-4">
+                    <div className="space-y-4">
+                      <AnimatePresence>
+                        {sessionToDisplay.recommendations.map((rec, index) => (
+                          <AgentRecommendationCard 
+                            key={`${rec.agentId}-${index}`} 
+                            recommendation={rec}
+                            index={index}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="analysis" className="mt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {sessionToDisplay.marketRegime && (
+                      <MarketContextPanel regime={sessionToDisplay.marketRegime} />
+                    )}
+                    
+                    {sessionToDisplay.conflictAnalysis && (
+                      <ConflictAnalysisPanel 
+                        analysis={sessionToDisplay.conflictAnalysis}
+                        recommendations={sessionToDisplay.recommendations}
+                      />
+                    )}
+                    
+                    {sessionToDisplay.weightedVotes && (
+                      <WeightedVotesPanel 
+                        votes={sessionToDisplay.weightedVotes}
+                        recommendations={sessionToDisplay.recommendations}
+                      />
+                    )}
+                    
+                    {sessionToDisplay.qualityScore && (
+                      <DecisionQualityPanel quality={sessionToDisplay.qualityScore} />
+                    )}
+                    
+                    {sessionToDisplay.recommendations.find(r => r.agentId === 'archivist') && (
+                      <ArchivistIntelligencePanel 
+                        recommendation={sessionToDisplay.recommendations.find(r => r.agentId === 'archivist') as ArchivistAgentRecommendation}
+                      />
+                    )}
+                    
+                    <ExecutionRulesPanel session={sessionToDisplay} />
                   </div>
-                </ScrollArea>
-              </div>
+                </TabsContent>
+
+                <TabsContent value="metrics" className="mt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {sessionToDisplay.survivalMetrics && (
+                      <SurvivalMetricsPanel metrics={sessionToDisplay.survivalMetrics} />
+                    )}
+                    
+                    {sessionToDisplay.riskMetrics && (
+                      <RiskTransparencyPanel metrics={sessionToDisplay.riskMetrics} />
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               {sessionToDisplay.status === 'active' && !selectedSession && (
                 <>
@@ -367,6 +425,12 @@ function AgentRecommendationCard({ recommendation, index }: AgentRecommendationC
                 <p className="font-heading font-bold text-base">
                   {recommendation.agentName}
                 </p>
+                <Badge 
+                  variant={isVeto ? 'destructive' : isApprove ? 'default' : 'outline'}
+                  className={cn("text-sm font-bold px-3 py-1", isVeto && "animate-pulse")}
+                >
+                  {recommendation.decisionAction}
+                </Badge>
                 {isVeto && (
                   <Badge variant="destructive" className="text-xs animate-pulse">
                     VETO ABSOLUTO
