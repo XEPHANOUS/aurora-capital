@@ -1,4 +1,4 @@
-import type { Agent, AgentType, InvestmentProposal, MarketPosition, NewsItem, Operation, OperationStatus, SystemConfig, MarketSentiment } from './types';
+import type { Agent, AgentType, InvestmentProposal, MarketPosition, NewsItem, Operation, OperationStatus, SystemConfig, MarketSentiment, DecisionSession, DetailedAgentRecommendation, NewsAgentRecommendation, TechnicalAgentRecommendation, RiskAgentRecommendation, SurvivalAgentRecommendation, ArchivistAgentRecommendation, InvestorAgentRecommendation, DirectorAgentRecommendation } from './types';
 
 export const DEFAULT_CONFIG: SystemConfig = {
   simulationMode: true,
@@ -302,4 +302,238 @@ export function formatDate(date: string): string {
     month: '2-digit',
     year: 'numeric',
   });
+}
+
+export function generateDecisionSession(
+  agents: Agent[], 
+  config: SystemConfig, 
+  currentCapital: number,
+  status: 'active' | 'completed' | 'vetoed' = 'active'
+): DecisionSession {
+  const assets = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'ADA/USDT'];
+  const actions: ('BUY' | 'SELL')[] = ['BUY', 'SELL'];
+  
+  const asset = assets[Math.floor(Math.random() * assets.length)];
+  const action = actions[Math.floor(Math.random() * actions.length)];
+  const amount = 5000 + Math.random() * 15000;
+  
+  const timestamp = new Date();
+  const recommendations: DetailedAgentRecommendation[] = [];
+  
+  const newsAgent = agents.find(a => a.id === 'news');
+  if (newsAgent) {
+    const newsRec: NewsAgentRecommendation = {
+      agentId: 'news',
+      agentName: newsAgent.name,
+      recommendation: Math.random() > 0.3 ? 'approve' : 'reject',
+      confidence: 60 + Math.random() * 35,
+      reasoning: Math.random() > 0.5 
+        ? 'Sentimiento del mercado positivo. Noticias recientes favorables sobre adopción institucional.' 
+        : 'Sentimiento negativo detectado. Preocupaciones sobre regulación en mercados clave.',
+      timestamp: new Date(timestamp.getTime() + 1000).toISOString(),
+      reputation: newsAgent.reputation,
+      weight: 0.15,
+      sentimentScore: 50 + Math.random() * 40 - 20,
+      relevantNews: [
+        'Bitcoin alcanza nuevo máximo en volumen de trading',
+        'Instituciones aumentan exposición a criptomonedas',
+        'Reguladores consideran nuevas políticas'
+      ]
+    };
+    recommendations.push(newsRec);
+  }
+  
+  const technicalAgent = agents.find(a => a.id === 'technical');
+  if (technicalAgent) {
+    const indicators = {
+      rsi: 30 + Math.random() * 40,
+      macd: Math.random() > 0.5 ? 'bullish' : 'bearish' as 'bullish' | 'bearish',
+      trend: Math.random() > 0.4 ? 'up' : Math.random() > 0.5 ? 'down' : 'sideways' as 'up' | 'down' | 'sideways'
+    };
+    
+    const techRec: TechnicalAgentRecommendation = {
+      agentId: 'technical',
+      agentName: technicalAgent.name,
+      recommendation: indicators.trend === 'up' && indicators.macd === 'bullish' ? 'approve' : 'reject',
+      confidence: 55 + Math.random() * 40,
+      reasoning: `RSI en ${indicators.rsi.toFixed(0)}. MACD muestra señal ${indicators.macd}. Tendencia ${indicators.trend === 'up' ? 'alcista' : indicators.trend === 'down' ? 'bajista' : 'lateral'} confirmada.`,
+      timestamp: new Date(timestamp.getTime() + 2000).toISOString(),
+      reputation: technicalAgent.reputation,
+      weight: 0.20,
+      indicators
+    };
+    recommendations.push(techRec);
+  }
+  
+  const riskAgent = agents.find(a => a.id === 'risk');
+  if (riskAgent) {
+    const riskScore = 1 + Math.random() * 4;
+    const positionSize = Math.min(amount, (currentCapital * config.maxRiskPerOperation) / 100);
+    
+    const riskRec: RiskAgentRecommendation = {
+      agentId: 'risk',
+      agentName: riskAgent.name,
+      recommendation: riskScore < 3 && amount <= positionSize ? 'approve' : 'reject',
+      confidence: 70 + Math.random() * 25,
+      reasoning: riskScore < 3 
+        ? `Riesgo calculado de ${riskScore.toFixed(1)}/5. Tamaño de posición dentro de límites permitidos.`
+        : `Riesgo elevado (${riskScore.toFixed(1)}/5). Excede parámetros de exposición máxima.`,
+      timestamp: new Date(timestamp.getTime() + 3000).toISOString(),
+      reputation: riskAgent.reputation,
+      weight: 0.25,
+      riskScore,
+      positionSizeRecommendation: positionSize,
+      maxLoss: positionSize * 0.15
+    };
+    recommendations.push(riskRec);
+  }
+  
+  const survivalAgent = agents.find(a => a.id === 'survival');
+  const wouldBreachReserve = wouldBreachSurvivalReserve(currentCapital, amount, config);
+  
+  if (survivalAgent) {
+    const reserve = calculateSurvivalReserve(config.totalCapital, config.survivalReservePercent);
+    const afterOp = currentCapital - amount;
+    const survivalStatus: 'safe' | 'warning' | 'critical' = 
+      afterOp > reserve * 1.2 ? 'safe' : 
+      afterOp > reserve ? 'warning' : 'critical';
+    
+    const survivalRec: SurvivalAgentRecommendation = {
+      agentId: 'survival',
+      agentName: survivalAgent.name,
+      recommendation: wouldBreachReserve ? 'veto' : survivalStatus === 'safe' ? 'approve' : 'neutral',
+      confidence: 100,
+      reasoning: wouldBreachReserve 
+        ? `VETO ABSOLUTO: Esta operación rompería la reserva de supervivencia. Capital resultante ${formatCurrency(afterOp)} vs. reserva mínima ${formatCurrency(reserve)}.`
+        : `Reserva de supervivencia protegida. Estado: ${survivalStatus}. Margen disponible: ${formatCurrency(afterOp - reserve)}.`,
+      timestamp: new Date(timestamp.getTime() + 4000).toISOString(),
+      reputation: survivalAgent.reputation,
+      weight: 1.0,
+      survivalStatus,
+      vetoStatus: wouldBreachReserve,
+      reserveImpact: ((reserve - afterOp) / reserve) * 100
+    };
+    recommendations.push(survivalRec);
+  }
+  
+  const archivistAgent = agents.find(a => a.id === 'archivist');
+  if (archivistAgent) {
+    const similarOps = Math.floor(Math.random() * 20) + 5;
+    const successRate = 40 + Math.random() * 50;
+    
+    const archRec: ArchivistAgentRecommendation = {
+      agentId: 'archivist',
+      agentName: archivistAgent.name,
+      recommendation: successRate > 60 ? 'approve' : 'reject',
+      confidence: 50 + Math.random() * 30,
+      reasoning: `Análisis de ${similarOps} operaciones similares. Tasa de éxito histórica: ${successRate.toFixed(0)}%. ${successRate > 60 ? 'Patrón favorable identificado.' : 'Patrón de riesgo elevado.'}`,
+      timestamp: new Date(timestamp.getTime() + 5000).toISOString(),
+      reputation: archivistAgent.reputation,
+      weight: 0.15,
+      similarOperations: similarOps,
+      historicalSuccessRate: successRate
+    };
+    recommendations.push(archRec);
+  }
+  
+  const investorAgent = agents.find(a => a.id === 'investor');
+  if (investorAgent) {
+    const invRec: InvestorAgentRecommendation = {
+      agentId: 'investor',
+      agentName: investorAgent.name,
+      recommendation: 'approve',
+      confidence: 65 + Math.random() * 30,
+      reasoning: `Oportunidad identificada en ${asset}. Análisis de riesgo/retorno favorable. Momento óptimo para ${action === 'BUY' ? 'entrada' : 'salida'}.`,
+      timestamp: new Date(timestamp.getTime() + 6000).toISOString(),
+      reputation: investorAgent.reputation,
+      weight: 0.20,
+      proposedAsset: asset,
+      proposedAction: action,
+      proposedAmount: amount,
+      estimatedReturn: 2.5 + Math.random() * 3
+    };
+    recommendations.push(invRec);
+  }
+  
+  const directorAgent = agents.find(a => a.id === 'director');
+  const hasVeto = recommendations.some(r => r.recommendation === 'veto');
+  const approvals = recommendations.filter(r => r.recommendation === 'approve').length;
+  const rejections = recommendations.filter(r => r.recommendation === 'reject').length;
+  
+  let finalDecision: 'approved' | 'rejected' = 'approved';
+  let combinedConfidence = 0;
+  let explanation = '';
+  
+  if (hasVeto) {
+    finalDecision = 'rejected';
+    combinedConfidence = 0;
+    explanation = 'Operación vetada por el Agente de Supervivencia. La protección de la reserva es prioritaria.';
+  } else if (approvals > rejections) {
+    finalDecision = 'approved';
+    const weightedSum = recommendations.reduce((sum, r) => 
+      r.recommendation === 'approve' ? sum + (r.confidence * r.weight) : sum, 0
+    );
+    const totalWeight = recommendations.reduce((sum, r) => 
+      r.recommendation === 'approve' ? sum + r.weight : sum, 0
+    );
+    combinedConfidence = totalWeight > 0 ? weightedSum / totalWeight : 0;
+    explanation = `Consenso alcanzado con ${approvals} votos favorables. Análisis técnico y de riesgo positivos. Proceder con ejecución.`;
+  } else {
+    finalDecision = 'rejected';
+    combinedConfidence = 20 + Math.random() * 30;
+    explanation = `Consenso insuficiente. ${rejections} agentes recomiendan rechazo. Factores de riesgo identificados superan oportunidad potencial.`;
+  }
+  
+  if (directorAgent) {
+    const dirRec: DirectorAgentRecommendation = {
+      agentId: 'director',
+      agentName: directorAgent.name,
+      recommendation: finalDecision === 'approved' ? 'approve' : 'reject',
+      confidence: combinedConfidence,
+      reasoning: explanation,
+      timestamp: new Date(timestamp.getTime() + 7000).toISOString(),
+      reputation: directorAgent.reputation,
+      weight: 1.0,
+      finalDecision,
+      combinedConfidence,
+      explanation
+    };
+    recommendations.push(dirRec);
+  }
+  
+  const consensusLevel = (approvals / (approvals + rejections)) * 100;
+  
+  return {
+    id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: timestamp.toISOString(),
+    status: hasVeto ? 'vetoed' : status,
+    proposal: {
+      asset,
+      action,
+      amount
+    },
+    recommendations,
+    finalDecision: status !== 'active' ? {
+      approved: finalDecision === 'approved',
+      reason: explanation,
+      timestamp: new Date(timestamp.getTime() + 8000).toISOString()
+    } : undefined,
+    consensusLevel,
+    duration: 7 + Math.random() * 5
+  };
+}
+
+export function generateMockDecisionSessions(agents: Agent[], config: SystemConfig, currentCapital: number, count: number = 5): DecisionSession[] {
+  const sessions: DecisionSession[] = [];
+  const statuses: ('completed' | 'vetoed')[] = ['completed', 'completed', 'completed', 'vetoed', 'completed'];
+  
+  for (let i = 0; i < count; i++) {
+    const session = generateDecisionSession(agents, config, currentCapital, statuses[i % statuses.length]);
+    const pastTime = new Date();
+    pastTime.setHours(pastTime.getHours() - (i * 3));
+    session.timestamp = pastTime.toISOString();
+    sessions.push(session);
+  }
+  
+  return sessions.reverse();
 }

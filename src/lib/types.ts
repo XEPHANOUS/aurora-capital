@@ -89,3 +89,93 @@ export interface MarketSentiment {
   summary: string;
   lastUpdate: string;
 }
+
+export interface AgentRecommendation {
+  agentId: AgentType;
+  agentName: string;
+  recommendation: 'approve' | 'reject' | 'veto' | 'neutral';
+  confidence: number;
+  reasoning: string;
+  timestamp: string;
+  reputation: number;
+  weight: number;
+}
+
+export interface NewsAgentRecommendation extends AgentRecommendation {
+  agentId: 'news';
+  sentimentScore: number;
+  relevantNews: string[];
+}
+
+export interface TechnicalAgentRecommendation extends AgentRecommendation {
+  agentId: 'technical';
+  indicators: {
+    rsi: number;
+    macd: 'bullish' | 'bearish' | 'neutral';
+    trend: 'up' | 'down' | 'sideways';
+  };
+}
+
+export interface RiskAgentRecommendation extends AgentRecommendation {
+  agentId: 'risk';
+  riskScore: number;
+  positionSizeRecommendation: number;
+  maxLoss: number;
+}
+
+export interface SurvivalAgentRecommendation extends AgentRecommendation {
+  agentId: 'survival';
+  survivalStatus: 'safe' | 'warning' | 'critical';
+  vetoStatus: boolean;
+  reserveImpact: number;
+}
+
+export interface ArchivistAgentRecommendation extends AgentRecommendation {
+  agentId: 'archivist';
+  similarOperations: number;
+  historicalSuccessRate: number;
+  bestMatch?: Operation;
+}
+
+export interface InvestorAgentRecommendation extends AgentRecommendation {
+  agentId: 'investor';
+  proposedAsset: string;
+  proposedAction: OperationType;
+  proposedAmount: number;
+  estimatedReturn: number;
+}
+
+export interface DirectorAgentRecommendation extends AgentRecommendation {
+  agentId: 'director';
+  finalDecision: 'approved' | 'rejected';
+  combinedConfidence: number;
+  explanation: string;
+}
+
+export type DetailedAgentRecommendation = 
+  | NewsAgentRecommendation
+  | TechnicalAgentRecommendation
+  | RiskAgentRecommendation
+  | SurvivalAgentRecommendation
+  | ArchivistAgentRecommendation
+  | InvestorAgentRecommendation
+  | DirectorAgentRecommendation;
+
+export interface DecisionSession {
+  id: string;
+  timestamp: string;
+  status: 'active' | 'completed' | 'vetoed';
+  proposal: {
+    asset: string;
+    action: OperationType;
+    amount: number;
+  };
+  recommendations: DetailedAgentRecommendation[];
+  finalDecision?: {
+    approved: boolean;
+    reason: string;
+    timestamp: string;
+  };
+  consensusLevel: number;
+  duration: number;
+}

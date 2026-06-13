@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AgentCard } from '@/components/AgentCard';
 import { SurvivalGauge } from '@/components/SurvivalGauge';
 import { Sparkline } from '@/components/Sparkline';
+import { DecisionCenter } from '@/components/DecisionCenter';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig } from '@/lib/types';
@@ -156,6 +157,7 @@ function App() {
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="decisions">Decision Center</TabsTrigger>
             <TabsTrigger value="market">Análisis de Mercado</TabsTrigger>
             <TabsTrigger value="agents">Vista de Agentes</TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
@@ -359,6 +361,14 @@ function App() {
                 ))}
               </div>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="decisions">
+            <DecisionCenter 
+              agents={agents}
+              config={config}
+              currentCapital={currentCapital}
+            />
           </TabsContent>
           
           <TabsContent value="market" className="space-y-6">
