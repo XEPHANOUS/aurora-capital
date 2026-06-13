@@ -309,7 +309,7 @@ export interface LearningRecord {
   timestamp: string;
 }
 
-export type EnvironmentType = 'sandbox' | 'demo' | 'real';
+export type EnvironmentType = 'sandbox' | 'demo' | 'paper' | 'real';
 export type DataProviderType = 'mock' | 'live';
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
 

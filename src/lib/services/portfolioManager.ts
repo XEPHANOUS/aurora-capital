@@ -35,8 +35,8 @@ export const DEFAULT_PORTFOLIOS: Record<EnvironmentType, Omit<Portfolio, 'id' | 
   demo: {
     name: 'Demo Portfolio',
     environment: 'demo',
-    balance: 100000,
-    initialBalance: 100000,
+    balance: 50000,
+    initialBalance: 50000,
     operations: [],
     statistics: {
       totalTrades: 0,
@@ -51,16 +51,16 @@ export const DEFAULT_PORTFOLIOS: Record<EnvironmentType, Omit<Portfolio, 'id' | 
     riskControls: {
       maxPositionSize: 5000,
       maxDailyLoss: 2500,
-      maxDrawdown: 15000,
+      maxDrawdown: 10000,
       stopLossRequired: true,
-      requiresApproval: true,
+      requiresApproval: false,
     },
   },
-  real: {
-    name: 'Real Portfolio',
-    environment: 'real',
-    balance: 0,
-    initialBalance: 0,
+  paper: {
+    name: 'Paper Live Portfolio',
+    environment: 'paper',
+    balance: 25000,
+    initialBalance: 25000,
     operations: [],
     statistics: {
       totalTrades: 0,
@@ -73,9 +73,33 @@ export const DEFAULT_PORTFOLIOS: Record<EnvironmentType, Omit<Portfolio, 'id' | 
       winRate: 0,
     },
     riskControls: {
-      maxPositionSize: 5000,
-      maxDailyLoss: 1500,
-      maxDrawdown: 10000,
+      maxPositionSize: 2500,
+      maxDailyLoss: 1250,
+      maxDrawdown: 5000,
+      stopLossRequired: true,
+      requiresApproval: false,
+    },
+  },
+  real: {
+    name: 'Real Portfolio',
+    environment: 'real',
+    balance: 2500,
+    initialBalance: 2500,
+    operations: [],
+    statistics: {
+      totalTrades: 0,
+      successfulTrades: 0,
+      failedTrades: 0,
+      totalReturn: 0,
+      averageReturn: 0,
+      maxDrawdown: 0,
+      sharpeRatio: 0,
+      winRate: 0,
+    },
+    riskControls: {
+      maxPositionSize: 500,
+      maxDailyLoss: 250,
+      maxDrawdown: 1000,
       stopLossRequired: true,
       requiresApproval: true,
     },
@@ -161,6 +185,11 @@ export class PortfolioManager {
       demo: {
         minTrades: 50,
         minSuccessRate: 65,
+        minReturn: 2500,
+      },
+      paper: {
+        minTrades: 100,
+        minSuccessRate: 70,
         minReturn: 5000,
       },
       real: undefined,

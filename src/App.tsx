@@ -15,9 +15,10 @@ import { ProductionDecisionCenter } from '@/components/ProductionDecisionCenter'
 import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
 import { LearningDashboard } from '@/components/LearningDashboard';
 import { EnhancedConsensusEngine } from '@/components/EnhancedConsensusEngine';
+import { EnvironmentSwitcher } from '@/components/EnvironmentSwitcher';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState } from '@/lib/types';
+import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType } from '@/lib/types';
 import { 
   DEFAULT_CONFIG, 
   initializeAgents, 
@@ -36,16 +37,88 @@ import {
 } from '@/lib/mockData';
 import { DEFAULT_ORGANIZATION_CONFIG } from '@/lib/organizationProfiles';
 import { initializeLearningEngine, initializeAgentPerformance } from '@/lib/services/learningEngine';
+import { DEFAULT_ENVIRONMENT_BALANCES, getEnvironmentConfig, ENVIRONMENT_CONFIGS } from '@/lib/services/environmentManager';
+
+interface EnvironmentAccount {
+  agents: Agent[];
+  operations: Operation[];
+  currentCapital: number;
+  learningState: LearningEngineState;
+  config: SystemConfig;
+}
+
+const createDefaultAccount = (env: EnvironmentType): EnvironmentAccount => ({
+  agents: [],
+  operations: [],
+  currentCapital: DEFAULT_ENVIRONMENT_BALANCES[env],
+  learningState: initializeLearningEngine(),
+  config: { ...DEFAULT_CONFIG, totalCapital: DEFAULT_ENVIRONMENT_BALANCES[env] },
+});
 
 function App() {
-  const [config, setConfig] = useKV<SystemConfig>('aurora-config', DEFAULT_CONFIG);
-  const [agents, setAgents] = useKV<Agent[]>('aurora-agents', []);
-  const [operations, setOperations] = useKV<Operation[]>('aurora-operations', []);
-  const [currentCapital, setCurrentCapital] = useKV<number>('aurora-capital', DEFAULT_CONFIG.totalCapital);
-  const [learningState, setLearningState] = useKV<LearningEngineState>(
-    'aurora-learning',
-    initializeLearningEngine()
-  );
+  const [currentEnvironment, setCurrentEnvironment] = useKV<EnvironmentType>('aurora-current-environment', 'sandbox');
+  
+  const [allAccounts, setAllAccounts] = useKV<Record<EnvironmentType, EnvironmentAccount>>('aurora-all-accounts', {
+    sandbox: createDefaultAccount('sandbox'),
+    demo: createDefaultAccount('demo'),
+    paper: createDefaultAccount('paper'),
+    real: createDefaultAccount('real'),
+  });
+  
+  const account = allAccounts?.[currentEnvironment!] || createDefaultAccount(currentEnvironment || 'sandbox');
+  const { agents, operations, currentCapital, learningState, config } = account;
+  
+  const updateCurrentAccount = (updater: (prev: EnvironmentAccount) => EnvironmentAccount) => {
+    if (!currentEnvironment || !allAccounts) return;
+    setAllAccounts((prev) => {
+      if (!prev) return {
+        sandbox: createDefaultAccount('sandbox'),
+        demo: createDefaultAccount('demo'),
+        paper: createDefaultAccount('paper'),
+        real: createDefaultAccount('real'),
+      };
+      return {
+        ...prev,
+        [currentEnvironment]: updater(prev[currentEnvironment]),
+      };
+    });
+  };
+  
+  const setAgents = (updater: React.SetStateAction<Agent[]>) => {
+    updateCurrentAccount((prev) => ({
+      ...prev,
+      agents: typeof updater === 'function' ? updater(prev.agents) : updater,
+    }));
+  };
+  
+  const setOperations = (updater: React.SetStateAction<Operation[]>) => {
+    updateCurrentAccount((prev) => ({
+      ...prev,
+      operations: typeof updater === 'function' ? updater(prev.operations) : updater,
+    }));
+  };
+  
+  const setCurrentCapital = (updater: React.SetStateAction<number>) => {
+    updateCurrentAccount((prev) => ({
+      ...prev,
+      currentCapital: typeof updater === 'function' ? updater(prev.currentCapital) : updater,
+    }));
+  };
+  
+  const setLearningState = (updater: React.SetStateAction<LearningEngineState>) => {
+    updateCurrentAccount((prev) => ({
+      ...prev,
+      learningState: typeof updater === 'function' ? updater(prev.learningState) : updater,
+    }));
+  };
+  
+  const setConfig = (updater: React.SetStateAction<SystemConfig>) => {
+    updateCurrentAccount((prev) => ({
+      ...prev,
+      config: typeof updater === 'function' ? updater(prev.config) : updater,
+    }));
+  };
+  
   const [proposal, setProposal] = useState<InvestmentProposal | null>(null);
   
   const [marketPositions] = useState<MarketPosition[]>(generateMockMarketPositions());
@@ -190,6 +263,11 @@ function App() {
           </div>
           
           <div className="flex items-center gap-4">
+            <EnvironmentSwitcher
+              currentEnvironment={currentEnvironment!}
+              onEnvironmentChange={setCurrentEnvironment}
+            />
+            
             <Badge 
               variant={config.simulationMode ? "outline" : "default"}
               className={cn(

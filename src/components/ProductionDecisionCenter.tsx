@@ -33,6 +33,7 @@ export function ProductionDecisionCenter({ agents, config, currentCapital }: Pro
   const [portfolios, setPortfolios] = useKV<Record<EnvironmentType, Portfolio>>('aurora-portfolios', {
     sandbox: { ...DEFAULT_PORTFOLIOS.sandbox, id: 'sandbox-1', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
     demo: { ...DEFAULT_PORTFOLIOS.demo, id: 'demo-1', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
+    paper: { ...DEFAULT_PORTFOLIOS.paper, id: 'paper-1', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
     real: { ...DEFAULT_PORTFOLIOS.real, id: 'real-1', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
   });
   
