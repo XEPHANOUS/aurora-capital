@@ -13,10 +13,11 @@ import { Sparkline } from '@/components/Sparkline';
 import { DecisionCenter } from '@/components/DecisionCenter';
 import { ProductionDecisionCenter } from '@/components/ProductionDecisionCenter';
 import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
-import { ConsensusDemo } from '@/components/ConsensusDemo';
+import { LearningDashboard } from '@/components/LearningDashboard';
+import { EnhancedConsensusEngine } from '@/components/EnhancedConsensusEngine';
 import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile } from '@/lib/types';
+import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState } from '@/lib/types';
 import { 
   DEFAULT_CONFIG, 
   initializeAgents, 
@@ -34,12 +35,17 @@ import {
   generateTrendData
 } from '@/lib/mockData';
 import { DEFAULT_ORGANIZATION_CONFIG } from '@/lib/organizationProfiles';
+import { initializeLearningEngine, initializeAgentPerformance } from '@/lib/services/learningEngine';
 
 function App() {
   const [config, setConfig] = useKV<SystemConfig>('aurora-config', DEFAULT_CONFIG);
   const [agents, setAgents] = useKV<Agent[]>('aurora-agents', []);
   const [operations, setOperations] = useKV<Operation[]>('aurora-operations', []);
   const [currentCapital, setCurrentCapital] = useKV<number>('aurora-capital', DEFAULT_CONFIG.totalCapital);
+  const [learningState, setLearningState] = useKV<LearningEngineState>(
+    'aurora-learning',
+    initializeLearningEngine()
+  );
   const [proposal, setProposal] = useState<InvestmentProposal | null>(null);
   
   const [marketPositions] = useState<MarketPosition[]>(generateMockMarketPositions());
@@ -55,6 +61,31 @@ function App() {
       setOperations(generateMockOperations());
     }
   }, []);
+
+  useEffect(() => {
+    if (agents && agents.length > 0 && learningState) {
+      const newPerformance = { ...learningState.agentPerformance };
+      let needsUpdate = false;
+
+      agents.forEach(agent => {
+        if (!newPerformance[agent.id]) {
+          newPerformance[agent.id] = initializeAgentPerformance(
+            agent.id,
+            agent.name,
+            agent.reputation
+          );
+          needsUpdate = true;
+        }
+      });
+
+      if (needsUpdate) {
+        setLearningState((prev) => prev ? {
+          ...prev,
+          agentPerformance: newPerformance,
+        } : initializeLearningEngine());
+      }
+    }
+  }, [agents, learningState, setLearningState]);
   
   useEffect(() => {
     if (agents && agents.length > 0 && config && currentCapital !== undefined && !proposal) {
@@ -63,7 +94,7 @@ function App() {
     }
   }, [agents, config, currentCapital]);
   
-  if (!config || !agents || !operations || currentCapital === undefined) {
+  if (!config || !agents || !operations || currentCapital === undefined || !learningState) {
     return null;
   }
   
@@ -179,7 +210,8 @@ function App() {
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="consensus">Consensus Engine</TabsTrigger>
+            <TabsTrigger value="consensus">Enhanced Consensus</TabsTrigger>
+            <TabsTrigger value="learning">Learning & Performance</TabsTrigger>
             <TabsTrigger value="production">Centro Producción</TabsTrigger>
             <TabsTrigger value="decisions">Decision Center</TabsTrigger>
             <TabsTrigger value="market">Análisis de Mercado</TabsTrigger>
@@ -388,11 +420,16 @@ function App() {
           </TabsContent>
           
           <TabsContent value="consensus">
-            <ConsensusDemo 
+            <EnhancedConsensusEngine 
               agents={agents}
               config={config}
               currentCapital={currentCapital}
+              learningState={learningState}
             />
+          </TabsContent>
+
+          <TabsContent value="learning">
+            <LearningDashboard learningState={learningState} />
           </TabsContent>
           
           <TabsContent value="production">

@@ -487,3 +487,147 @@ export interface EnhancedDecisionSession extends DecisionSession {
     environment: EnvironmentType;
   };
 }
+
+export type VetoType = 'risk' | 'survival' | 'auditor' | 'director-override';
+
+export interface VetoRule {
+  type: VetoType;
+  active: boolean;
+  agentId: AgentType;
+  condition: string;
+  priority: number;
+}
+
+export interface VetoResult {
+  triggered: boolean;
+  type?: VetoType;
+  agentId?: AgentType;
+  reason?: string;
+  timestamp?: string;
+}
+
+export interface TradeQualityFactors {
+  consensus: number;
+  risk: number;
+  volatility: number;
+  averageConfidence: number;
+  profitRiskRatio: number;
+  agentAlignment: number;
+}
+
+export interface TradeQuality {
+  score: number;
+  grade: 'Poor' | 'Weak' | 'Average' | 'Good' | 'Elite';
+  factors: TradeQualityFactors;
+}
+
+export interface CompletedTrade {
+  id: string;
+  sessionId: string;
+  symbol: string;
+  action: OperationType;
+  entryPrice: number;
+  exitPrice: number;
+  amount: number;
+  pnl: number;
+  pnlPercent: number;
+  consensus: number;
+  agentVotes: Record<AgentType, { vote: 'APPROVE' | 'REJECT' | 'VETO'; confidence: number }>;
+  agentReputationsUsed: Record<AgentType, number>;
+  outcome: 'win' | 'loss' | 'breakeven';
+  timestamp: string;
+  exitTimestamp: string;
+  duration: number;
+  tradeQuality?: TradeQuality;
+}
+
+export interface AgentPerformanceStats {
+  agentId: AgentType;
+  agentName: string;
+  reputation: number;
+  totalVotes: number;
+  correctVotes: number;
+  incorrectVotes: number;
+  accuracy: number;
+  winRate: number;
+  avgPnlWhenCorrect: number;
+  avgPnlWhenWrong: number;
+  totalPnlInfluence: number;
+  consistency: number;
+  drawdownCaused: number;
+  reputationHistory: { timestamp: string; reputation: number; reason: string }[];
+}
+
+export interface LearningEngineState {
+  completedTrades: CompletedTrade[];
+  agentPerformance: Record<AgentType, AgentPerformanceStats>;
+  globalStats: {
+    totalTrades: number;
+    winningTrades: number;
+    losingTrades: number;
+    breakEvenTrades: number;
+    winRate: number;
+    totalPnl: number;
+    totalPnlPercent: number;
+    avgWin: number;
+    avgLoss: number;
+    profitFactor: number;
+    sharpeRatio: number;
+    maxDrawdown: number;
+    maxDrawdownPercent: number;
+    currentDrawdown: number;
+    consecutiveWins: number;
+    consecutiveLosses: number;
+    bestTrade: number;
+    worstTrade: number;
+  };
+  lastUpdated: string;
+}
+
+export interface ReputationUpdate {
+  agentId: AgentType;
+  oldReputation: number;
+  newReputation: number;
+  change: number;
+  reason: string;
+  tradeId: string;
+  timestamp: string;
+}
+
+export interface ConsensusCalculation {
+  rawConsensus: number;
+  weightedConsensus: number;
+  votes: {
+    agentId: AgentType;
+    vote: 'APPROVE' | 'REJECT' | 'VETO';
+    confidence: number;
+    influence: number;
+    reputation: number;
+    effectiveInfluence: number;
+    weightedScore: number;
+  }[];
+  totalInfluence: number;
+  approveScore: number;
+  rejectScore: number;
+  vetoCount: number;
+}
+
+export interface VetoCheckResult {
+  hasVeto: boolean;
+  vetos: VetoResult[];
+  finalDecision: 'APPROVED' | 'REJECTED';
+  blockingVeto?: VetoResult;
+}
+
+export interface DecisionExplanation {
+  summary: string;
+  consensusScore: number;
+  tradeQuality: TradeQuality;
+  supportingAgents: { agentId: AgentType; name: string; confidence: number }[];
+  opposingAgents: { agentId: AgentType; name: string; confidence: number }[];
+  neutralAgents: { agentId: AgentType; name: string; confidence: number }[];
+  vetosEvaluated: VetoResult[];
+  riskFactors: string[];
+  finalDecision: 'APPROVED' | 'REJECTED';
+  decisionReason: string;
+}
