@@ -124,20 +124,20 @@ export function AgentAssignmentConfig({
   const Icon = AGENT_ICONS[agent.id];
   
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="assignment" className="space-y-6">
-        <TabsList className="bg-card/50 backdrop-blur-sm border border-border w-full justify-start overflow-x-auto flex-nowrap">
+    <div className="flex flex-col h-full">
+      <Tabs defaultValue="assignment" className="flex flex-col h-full">
+        <TabsList className="bg-card/50 backdrop-blur-sm border border-border w-full justify-start overflow-x-auto flex-nowrap flex-shrink-0">
           <TabsTrigger value="assignment" className="whitespace-nowrap">Individual Assignment</TabsTrigger>
           <TabsTrigger value="organization" className="whitespace-nowrap">Organization Profiles</TabsTrigger>
           <TabsTrigger value="hierarchy" className="whitespace-nowrap">Hierarchy View</TabsTrigger>
           <TabsTrigger value="influence" className="whitespace-nowrap">Influence System</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="assignment" className="space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <Card className="p-4 bg-card/50 backdrop-blur-sm">
-              <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide">Select Agent</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+        <TabsContent value="assignment" className="flex-1 mt-6 min-h-0">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
+            <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col h-full">
+              <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide flex-shrink-0">Select Agent</h3>
+              <div className="space-y-2 overflow-y-auto pr-2 flex-1">
                 {agents.map((a) => {
                   const AgIcon = AGENT_ICONS[a.id];
                   return (
@@ -165,8 +165,8 @@ export function AgentAssignmentConfig({
               </div>
             </Card>
             
-            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm space-y-6">
-              <div className="flex items-center gap-4">
+            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm flex flex-col h-full">
+              <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <Icon size={24} className="text-primary" />
                 </div>
@@ -176,9 +176,9 @@ export function AgentAssignmentConfig({
                 </div>
               </div>
               
-              <Separator />
+              <Separator className="my-6 flex-shrink-0" />
               
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-y-auto pr-2 flex-1">
                 <div>
                   <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Agent Type</Label>
                   <div className="flex gap-2">

@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
 import { 
@@ -150,7 +149,7 @@ export function SettingsModal({
               <p className="text-xs text-muted-foreground/80">Sistema Aurora Capital</p>
             </div>
             
-            <ScrollArea className="flex-1">
+            <div className="flex-1 overflow-y-auto">
               <nav className="p-3 sm:p-4 space-y-1.5">
                 {CATEGORIES.map((category) => {
                   const Icon = category.icon;
@@ -200,12 +199,12 @@ export function SettingsModal({
                   );
                 })}
               </nav>
-            </ScrollArea>
+            </div>
           </div>
           
           <div className="flex-1 flex flex-col min-w-0 bg-background/30 overflow-hidden">
-            <ScrollArea className="flex-1">
-              <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6 lg:p-8 h-full">
                 {selectedCategory === 'general' && (
                   <GeneralSettings config={config} onSimulationToggle={onSimulationToggle} />
                 )}
@@ -247,7 +246,7 @@ export function SettingsModal({
                   <ComingSoonPanel category="Backups" />
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </div>
       </DialogContent>
@@ -343,20 +342,22 @@ function AgentsSettings({
   onProfileChange: (profile: OrganizationalProfile) => void;
 }) {
   return (
-    <div className="space-y-6">
-      <div className="pb-2">
+    <div className="flex flex-col h-full">
+      <div className="pb-2 flex-shrink-0">
         <h3 className="font-heading font-bold text-2xl sm:text-3xl mb-2 tracking-tight">Agentes</h3>
         <p className="text-sm text-muted-foreground/80">
           Gestión completa de agentes, roles, jerarquías y configuración de modelos LLM
         </p>
       </div>
       
-      <AgentAssignmentConfig
-        agents={agents}
-        onUpdateAgent={onUpdateAgent}
-        onProfileChange={onProfileChange}
-        currentProfile={config.organization?.profile ?? 'balanced'}
-      />
+      <div className="flex-1 mt-6 min-h-0">
+        <AgentAssignmentConfig
+          agents={agents}
+          onUpdateAgent={onUpdateAgent}
+          onProfileChange={onProfileChange}
+          currentProfile={config.organization?.profile ?? 'balanced'}
+        />
+      </div>
     </div>
   );
 }
