@@ -27,19 +27,6 @@ export function NavigationMenu({ currentTab, onTabChange }: NavigationMenuProps)
 
   return (
     <nav className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        onClick={() => onTabChange('dashboard')}
-        className={cn(
-          'font-heading font-semibold text-sm tracking-wide transition-colors',
-          isTabActive('dashboard')
-            ? 'text-primary bg-primary/10'
-            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-        )}
-      >
-        Dashboard
-      </Button>
-
       <DropdownMenu onOpenChange={(open) => !open && setActiveMenu(null)}>
         <DropdownMenuTrigger asChild>
           <Button
@@ -103,7 +90,7 @@ export function NavigationMenu({ currentTab, onTabChange }: NavigationMenuProps)
             onClick={() => handleMenuClick('trading')}
             className={cn(
               'font-heading font-semibold text-sm tracking-wide transition-colors gap-1',
-              isMenuActive(['market', 'decisions', 'environments'])
+              isMenuActive(['markets', 'portfolio', 'decisions', 'environments'])
                 ? 'text-primary bg-primary/10'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
             )}
@@ -114,13 +101,22 @@ export function NavigationMenu({ currentTab, onTabChange }: NavigationMenuProps)
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-[220px]">
           <DropdownMenuItem
-            onClick={() => onTabChange('market')}
+            onClick={() => onTabChange('markets')}
             className={cn(
               'font-body cursor-pointer',
-              isTabActive('market') && 'bg-primary/10 text-primary'
+              isTabActive('markets') && 'bg-primary/10 text-primary'
             )}
           >
-            Mercado
+            Mercados
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onTabChange('portfolio')}
+            className={cn(
+              'font-body cursor-pointer',
+              isTabActive('portfolio') && 'bg-primary/10 text-primary'
+            )}
+          >
+            Portfolio
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => onTabChange('decisions')}
@@ -150,7 +146,7 @@ export function NavigationMenu({ currentTab, onTabChange }: NavigationMenuProps)
             onClick={() => handleMenuClick('ia')}
             className={cn(
               'font-heading font-semibold text-sm tracking-wide transition-colors gap-1',
-              isMenuActive(['agents', 'consensus', 'learning', 'production'])
+              isMenuActive(['agents', 'consensus', 'learning', 'production', 'models', 'providers', 'training'])
                 ? 'text-primary bg-primary/10'
                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
             )}
@@ -195,6 +191,34 @@ export function NavigationMenu({ currentTab, onTabChange }: NavigationMenuProps)
             )}
           >
             Producción
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => onTabChange('models')}
+            className={cn(
+              'font-body cursor-pointer',
+              isTabActive('models') && 'bg-primary/10 text-primary'
+            )}
+          >
+            Modelos
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onTabChange('providers')}
+            className={cn(
+              'font-body cursor-pointer',
+              isTabActive('providers') && 'bg-primary/10 text-primary'
+            )}
+          >
+            Proveedores LLM
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onTabChange('training')}
+            className={cn(
+              'font-body cursor-pointer',
+              isTabActive('training') && 'bg-primary/10 text-primary'
+            )}
+          >
+            Entrenamiento
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

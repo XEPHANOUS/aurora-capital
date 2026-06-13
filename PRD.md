@@ -1,6 +1,6 @@
 # Aurora Capital - Autonomous Investment AI System
 
-Aurora Capital is an autonomous investment AI system composed of multiple specialized agents that collaborate to analyze markets, assess risk, and execute investment decisions with sophisticated safeguards.
+Aurora Capital is an autonomous investment AI system composed of multiple specialized agents that collaborate to analyze markets, assess risk, and execute investment decisions with sophisticated safeguards. The platform features a professional multi-environment trading architecture designed for scalability across multiple markets and asset classes.
 
 **Experience Qualities**:
 1. **Commanding** - The interface projects authority and precision, conveying the gravity of autonomous financial decision-making through bold hierarchies and decisive visual language.
@@ -8,7 +8,7 @@ Aurora Capital is an autonomous investment AI system composed of multiple specia
 3. **Vigilant** - The system emphasizes constant monitoring and protective mechanisms, with the Survival Agent's veto authority visually reinforced as the ultimate safeguard.
 
 **Complexity Level**: Complex Application (advanced functionality with multiple views)
-This is a sophisticated multi-agent AI system that simulates autonomous investment decision-making. It requires real-time data visualization, agent coordination logic, historical tracking, reputation scoring, risk management displays, and simulation capabilities across multiple interconnected views.
+This is a sophisticated multi-agent AI system that simulates autonomous investment decision-making. It requires real-time data visualization, agent coordination logic, historical tracking, reputation scoring, risk management displays, simulation capabilities, and multi-environment portfolio management across interconnected views. The platform is architected to scale to thousands of assets across multiple markets without requiring future navigation restructuring.
 
 ## Essential Features
 

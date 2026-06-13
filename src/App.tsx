@@ -22,6 +22,8 @@ import { GlobalOpportunityScanner } from '@/components/GlobalOpportunityScanner'
 import { MacroEconomyDashboard } from '@/components/MacroEconomyDashboard';
 import { NavigationMenu } from '@/components/NavigationMenu';
 import { SettingsModal } from '@/components/SettingsModal';
+import { MarketsCenter } from '@/components/MarketsCenter';
+import { PortfolioCenter } from '@/components/PortfolioCenter';
 import { Bell, TrendUp, TrendDown, Circle, Gear } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType, RealTradingConfirmation } from '@/lib/types';
@@ -366,14 +368,17 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto px-4 py-6 space-y-6">
         <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group" 
+            onClick={() => setCurrentTab('dashboard')}
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
               <svg className="w-6 h-6 text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
               </svg>
             </div>
             <div>
-              <h1 className="font-heading font-bold text-2xl tracking-tight text-glow">
+              <h1 className="font-heading font-bold text-2xl tracking-tight text-glow group-hover:text-primary transition-colors">
                 AURORA CAPITAL
               </h1>
               <p className="text-xs text-muted-foreground uppercase tracking-widest">
@@ -383,10 +388,27 @@ function App() {
           </div>
           
           <div className="flex items-center gap-4">
-            <EnvironmentSwitcher
-              currentEnvironment={currentEnvironment!}
-              onEnvironmentChange={handleEnvironmentSwitch}
-            />
+            <div className="flex items-center gap-2">
+              {(['sandbox', 'demo', 'paper', 'real'] as EnvironmentType[]).map((env) => {
+                const envConfig = ENVIRONMENT_CONFIGS[env];
+                const isActive = currentEnvironment === env;
+                return (
+                  <Button
+                    key={env}
+                    variant={isActive ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleEnvironmentSwitch(env)}
+                    className={cn(
+                      'font-heading font-semibold text-xs uppercase tracking-wider transition-all',
+                      isActive && 'shadow-lg shadow-primary/30'
+                    )}
+                  >
+                    <span className="mr-1">{envConfig.icon}</span>
+                    {envConfig.name}
+                  </Button>
+                );
+              })}
+            </div>
             
             <Badge 
               variant={config.simulationMode ? "outline" : "default"}
@@ -618,6 +640,26 @@ function App() {
             </>
           )}
           
+          {currentTab === 'markets' && (
+            <MarketsCenter
+              cryptoAssets={cryptoAssets}
+              stockAssets={stockAssets}
+              etfAssets={etfAssets}
+              forexAssets={forexAssets}
+              commodityAssets={commodityAssets}
+              indexAssets={indexAssets}
+              realEstateAssets={realEstateAssets}
+            />
+          )}
+
+          {currentTab === 'portfolio' && (
+            <PortfolioCenter
+              allAccounts={allAccounts!}
+              currentEnvironment={currentEnvironment!}
+              onSelectEnvironment={handleEnvironmentSwitch}
+            />
+          )}
+
           {currentTab === 'intelligence' && (
             <MarketIntelligenceCenter
               cryptoAssets={cryptoAssets}
@@ -777,6 +819,54 @@ function App() {
             </>
           )}
           
+          {currentTab === 'models' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-heading font-bold text-3xl tracking-tight text-glow">
+                  MODELOS
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Gestión de modelos LLM disponibles
+                </p>
+              </div>
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <p className="text-muted-foreground">Próximamente: Gestión de modelos OpenAI, Claude, Gemini, DeepSeek, Mistral, Groq, Ollama, LM Studio</p>
+              </Card>
+            </div>
+          )}
+
+          {currentTab === 'providers' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-heading font-bold text-3xl tracking-tight text-glow">
+                  PROVEEDORES LLM
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Configuración de APIs y proveedores
+                </p>
+              </div>
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <p className="text-muted-foreground">Próximamente: Configuración de proveedores LLM</p>
+              </Card>
+            </div>
+          )}
+
+          {currentTab === 'training' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-heading font-bold text-3xl tracking-tight text-glow">
+                  ENTRENAMIENTO
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sistema de entrenamiento y fine-tuning
+                </p>
+              </div>
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <p className="text-muted-foreground">Próximamente: Entrenamiento de modelos y fine-tuning</p>
+              </Card>
+            </div>
+          )}
+
           {currentTab === 'agents' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map((agent) => (
