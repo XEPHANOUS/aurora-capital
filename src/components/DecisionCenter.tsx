@@ -162,7 +162,7 @@ export function DecisionCenter({ agents, config, currentCapital }: DecisionCente
                   <Badge 
                     variant="outline" 
                     className={cn(
-                      "mb-3",
+                      "mb-3 animate-pulse-subtle",
                       sessionToDisplay.status === 'active' ? 'border-primary text-primary' :
                       sessionToDisplay.status === 'completed' ? 'border-accent text-accent' :
                       'border-warning text-warning'
@@ -180,8 +180,27 @@ export function DecisionCenter({ agents, config, currentCapital }: DecisionCente
                 </div>
                 
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Consenso</p>
-                  <p className="font-mono font-bold text-2xl">{Math.round(sessionToDisplay.consensusLevel)}%</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Consenso Global</p>
+                  <div className="flex items-center gap-3">
+                    <p className="font-mono font-bold text-3xl">{Math.round(sessionToDisplay.consensusLevel)}%</p>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs",
+                          sessionToDisplay.consensusLevel >= 70 ? 'border-accent text-accent' :
+                          sessionToDisplay.consensusLevel >= 50 ? 'border-yellow-400 text-yellow-400' :
+                          'border-destructive text-destructive'
+                        )}
+                      >
+                        {sessionToDisplay.consensusLevel >= 70 ? 'ALTO' :
+                         sessionToDisplay.consensusLevel >= 50 ? 'MEDIO' : 'BAJO'}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {sessionToDisplay.duration.toFixed(1)}s
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -322,64 +341,118 @@ function AgentRecommendationCard({ recommendation, index }: AgentRecommendationC
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
       className={cn(
-        "relative p-4 rounded-lg border bg-background/50",
-        isVeto ? 'border-warning/50 bg-warning/5' :
-        isApprove ? 'border-accent/30' :
-        'border-border'
+        "relative p-5 rounded-xl border-2 bg-background/60 backdrop-blur-sm",
+        isVeto ? 'border-warning/50 bg-warning/5 shadow-lg shadow-warning/10' :
+        isApprove ? 'border-accent/30 bg-accent/5' :
+        'border-border bg-card/30'
       )}
     >
       {index < 6 && (
-        <div className="absolute left-6 top-full w-px h-4 bg-border" />
+        <div className="absolute left-8 top-full w-0.5 h-4 bg-gradient-to-b from-border to-transparent" />
       )}
       
       <div className="flex items-start gap-4">
         <div className={cn(
-          "flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center",
-          colorClass
+          "flex-shrink-0 w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all",
+          colorClass,
+          isVeto && "animate-pulse ring-2 ring-warning/30"
         )}>
-          <Icon size={20} />
+          <Icon size={24} weight="duotone" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="font-heading font-semibold text-sm">
-                {recommendation.agentName}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="font-heading font-bold text-base">
+                  {recommendation.agentName}
+                </p>
+                {isVeto && (
+                  <Badge variant="destructive" className="text-xs animate-pulse">
+                    VETO ABSOLUTO
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge 
                   variant={isVeto ? 'destructive' : isApprove ? 'default' : 'outline'}
-                  className="text-xs"
+                  className="text-xs font-semibold"
                 >
-                  {isVeto ? 'VETO' : isApprove ? 'APRUEBA' : 'RECHAZA'}
+                  {isVeto ? '⛔ VETO' : isApprove ? '✓ APRUEBA' : '✗ RECHAZA'}
                 </Badge>
-                <span className="text-xs text-muted-foreground">
-                  Reputación: {recommendation.reputation.toFixed(0)}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">Rep:</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-16 h-1.5 bg-background rounded-full overflow-hidden">
+                      <div 
+                        className={cn(
+                          "h-full transition-all",
+                          recommendation.reputation >= 70 ? 'bg-accent' :
+                          recommendation.reputation >= 40 ? 'bg-yellow-500' :
+                          'bg-destructive'
+                        )}
+                        style={{ width: `${recommendation.reputation}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono font-medium">
+                      {recommendation.reputation.toFixed(0)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">Peso:</span>
+                  <span className="text-xs font-mono font-semibold text-foreground">
+                    {(recommendation.weight * 100).toFixed(0)}%
+                  </span>
+                </div>
               </div>
             </div>
             
             <div className="text-right">
-              <p className="text-xs text-muted-foreground mb-1">Confianza</p>
-              <p className="font-mono font-bold text-lg">{Math.round(recommendation.confidence)}%</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Confianza</p>
+              <p className={cn(
+                "font-mono font-bold text-2xl",
+                isApprove ? 'text-accent' : isReject ? 'text-destructive' : 'text-warning'
+              )}>
+                {Math.round(recommendation.confidence)}%
+              </p>
             </div>
           </div>
           
-          <Progress value={recommendation.confidence} className="h-1 mb-3" />
+          <div className="mb-3">
+            <Progress 
+              value={recommendation.confidence} 
+              className={cn(
+                "h-2",
+                isVeto && "bg-warning/20"
+              )}
+            />
+          </div>
           
-          <p className="text-sm text-foreground/90 leading-relaxed mb-3">
-            {recommendation.reasoning}
-          </p>
+          <div className={cn(
+            "p-3 rounded-lg mb-3",
+            isVeto ? 'bg-warning/10 border border-warning/30' :
+            'bg-muted/30 border border-border/50'
+          )}>
+            <p className="text-sm text-foreground leading-relaxed">
+              {recommendation.reasoning}
+            </p>
+          </div>
           
           {renderAgentSpecificData(recommendation)}
           
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-            <span className="text-xs text-muted-foreground">
-              {new Date(recommendation.timestamp).toLocaleTimeString('es-ES')}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Peso: {(recommendation.weight * 100).toFixed(0)}%
-            </span>
+            <div className="flex items-center gap-2">
+              <Clock size={14} className="text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {new Date(recommendation.timestamp).toLocaleTimeString('es-ES')}
+              </span>
+            </div>
+            {recommendation.agentId === 'survival' && recommendation.weight === 1 && (
+              <Badge variant="outline" className="text-xs border-warning text-warning">
+                Autoridad de Veto
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -392,18 +465,32 @@ function renderAgentSpecificData(rec: DetailedAgentRecommendation) {
     case 'news': {
       const newsRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'news' }>;
       return (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Sentimiento:</span>
-            <Badge variant="outline" className="text-xs">
+        <div className="space-y-3 p-3 rounded-lg bg-blue-500/5 border border-blue-400/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Análisis de Sentimiento</span>
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-xs font-mono",
+                newsRec.sentimentScore > 20 ? 'border-accent text-accent' :
+                newsRec.sentimentScore < -20 ? 'border-destructive text-destructive' :
+                'border-muted-foreground text-muted-foreground'
+              )}
+            >
               {newsRec.sentimentScore > 0 ? '+' : ''}{newsRec.sentimentScore.toFixed(0)}
             </Badge>
           </div>
           {newsRec.relevantNews.length > 0 && (
-            <div className="pl-4 border-l-2 border-border/50 space-y-1">
-              {newsRec.relevantNews.slice(0, 2).map((news, i) => (
-                <p key={i} className="text-xs text-muted-foreground">· {news}</p>
-              ))}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Noticias Relevantes</p>
+              <div className="space-y-1">
+                {newsRec.relevantNews.slice(0, 3).map((news, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
+                    <p className="text-xs text-foreground/80 leading-relaxed">{news}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -412,22 +499,52 @@ function renderAgentSpecificData(rec: DetailedAgentRecommendation) {
     case 'technical': {
       const techRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'technical' }>;
       return (
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">RSI</p>
-            <p className="font-mono text-sm font-semibold">{techRec.indicators.rsi.toFixed(0)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">MACD</p>
-            <Badge variant="outline" className="text-xs">
-              {techRec.indicators.macd}
-            </Badge>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Tendencia</p>
-            <Badge variant="outline" className="text-xs">
-              {techRec.indicators.trend === 'up' ? '↑' : techRec.indicators.trend === 'down' ? '↓' : '→'}
-            </Badge>
+        <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-400/20">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Indicadores Técnicos</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-2 rounded-md bg-background/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-1">RSI</p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-lg font-bold">{techRec.indicators.rsi.toFixed(0)}</p>
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "text-xs",
+                    techRec.indicators.rsi < 30 ? 'border-accent text-accent' :
+                    techRec.indicators.rsi > 70 ? 'border-destructive text-destructive' :
+                    'border-muted-foreground text-muted-foreground'
+                  )}
+                >
+                  {techRec.indicators.rsi < 30 ? 'Sobrevendido' : 
+                   techRec.indicators.rsi > 70 ? 'Sobrecomprado' : 'Neutral'}
+                </Badge>
+              </div>
+            </div>
+            <div className="p-2 rounded-md bg-background/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-1">MACD</p>
+              <Badge 
+                variant={techRec.indicators.macd === 'bullish' ? 'default' : 'destructive'}
+                className="text-xs mt-1"
+              >
+                {techRec.indicators.macd === 'bullish' ? '↗ Alcista' : 
+                 techRec.indicators.macd === 'bearish' ? '↘ Bajista' : '→ Neutral'}
+              </Badge>
+            </div>
+            <div className="p-2 rounded-md bg-background/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-1">Tendencia</p>
+              <Badge 
+                variant="outline"
+                className={cn(
+                  "text-xs mt-1",
+                  techRec.indicators.trend === 'up' ? 'border-accent text-accent' :
+                  techRec.indicators.trend === 'down' ? 'border-destructive text-destructive' :
+                  'border-muted-foreground text-muted-foreground'
+                )}
+              >
+                {techRec.indicators.trend === 'up' ? '↑ Subiendo' : 
+                 techRec.indicators.trend === 'down' ? '↓ Bajando' : '→ Lateral'}
+              </Badge>
+            </div>
           </div>
         </div>
       );
@@ -435,14 +552,34 @@ function renderAgentSpecificData(rec: DetailedAgentRecommendation) {
     case 'risk': {
       const riskRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'risk' }>;
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Riesgo</p>
-            <p className="font-mono text-sm font-semibold">{riskRec.riskScore.toFixed(1)}/5</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Tamaño Recomendado</p>
-            <p className="font-mono text-sm font-semibold">{formatCurrency(riskRec.positionSizeRecommendation)}</p>
+        <div className="p-3 rounded-lg bg-yellow-500/5 border border-yellow-400/20">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Análisis de Riesgo</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Score de Riesgo</p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-xl font-bold">{riskRec.riskScore.toFixed(1)}</p>
+                <span className="text-xs text-muted-foreground">/ 5.0</span>
+              </div>
+              <div className="w-full h-1.5 bg-background rounded-full overflow-hidden mt-2">
+                <div 
+                  className={cn(
+                    "h-full transition-all",
+                    riskRec.riskScore < 2 ? 'bg-accent' :
+                    riskRec.riskScore < 3.5 ? 'bg-yellow-500' :
+                    'bg-destructive'
+                  )}
+                  style={{ width: `${(riskRec.riskScore / 5) * 100}%` }}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Tamaño Recomendado</p>
+              <p className="font-mono text-sm font-semibold">{formatCurrency(riskRec.positionSizeRecommendation)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Pérdida máx: {formatCurrency(riskRec.maxLoss)}
+              </p>
+            </div>
           </div>
         </div>
       );
@@ -450,35 +587,82 @@ function renderAgentSpecificData(rec: DetailedAgentRecommendation) {
     case 'survival': {
       const survRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'survival' }>;
       return (
-        <div className="p-3 rounded-lg bg-background/80 border border-border/50">
-          <div className="flex items-center justify-between">
+        <div className={cn(
+          "p-4 rounded-lg border-2",
+          survRec.vetoStatus ? 'bg-warning/10 border-warning' : 'bg-orange-500/5 border-orange-400/20'
+        )}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Estado de Supervivencia</p>
             <Badge 
               variant={survRec.survivalStatus === 'safe' ? 'default' : survRec.survivalStatus === 'warning' ? 'outline' : 'destructive'}
-              className="text-xs"
+              className={cn(
+                "text-xs font-semibold",
+                survRec.vetoStatus && "animate-pulse"
+              )}
             >
-              {survRec.survivalStatus === 'safe' ? 'SEGURO' : 
-               survRec.survivalStatus === 'warning' ? 'ADVERTENCIA' : 'CRÍTICO'}
+              {survRec.survivalStatus === 'safe' ? '✓ SEGURO' : 
+               survRec.survivalStatus === 'warning' ? '⚠ ADVERTENCIA' : '⛔ CRÍTICO'}
             </Badge>
-            {survRec.vetoStatus && (
-              <Badge variant="destructive" className="text-xs">
-                VETO ACTIVO
-              </Badge>
-            )}
           </div>
+          {survRec.vetoStatus && (
+            <div className="p-3 rounded-md bg-warning/20 border border-warning/50">
+              <div className="flex items-center gap-2 mb-2">
+                <Warning size={16} className="text-warning" weight="fill" />
+                <span className="text-sm font-bold text-warning">VETO ACTIVADO</span>
+              </div>
+              <p className="text-xs text-foreground/90">
+                Esta operación ha sido bloqueada automáticamente para proteger la reserva de supervivencia del sistema.
+              </p>
+            </div>
+          )}
+          {!survRec.vetoStatus && (
+            <div className="flex items-center justify-between p-2 rounded-md bg-background/50 border border-border/50">
+              <span className="text-xs text-muted-foreground">Impacto en Reserva</span>
+              <span className="font-mono text-sm font-semibold">
+                {survRec.reserveImpact > 0 ? '-' : '+'}{Math.abs(survRec.reserveImpact).toFixed(1)}%
+              </span>
+            </div>
+          )}
         </div>
       );
     }
     case 'archivist': {
       const archRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'archivist' }>;
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Ops. Similares</p>
-            <p className="font-mono text-sm font-semibold">{archRec.similarOperations}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Éxito Histórico</p>
-            <p className="font-mono text-sm font-semibold">{archRec.historicalSuccessRate.toFixed(0)}%</p>
+        <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-400/20">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Datos Históricos</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-2 rounded-md bg-background/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-1">Ops. Similares</p>
+              <div className="flex items-center gap-2">
+                <Database size={16} className="text-purple-400" />
+                <p className="font-mono text-lg font-bold">{archRec.similarOperations}</p>
+              </div>
+            </div>
+            <div className="p-2 rounded-md bg-background/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-1">Tasa de Éxito</p>
+              <div className="flex items-center gap-2">
+                <p className={cn(
+                  "font-mono text-lg font-bold",
+                  archRec.historicalSuccessRate >= 60 ? 'text-accent' :
+                  archRec.historicalSuccessRate >= 40 ? 'text-yellow-500' :
+                  'text-destructive'
+                )}>
+                  {archRec.historicalSuccessRate.toFixed(0)}%
+                </p>
+              </div>
+              <div className="w-full h-1.5 bg-background rounded-full overflow-hidden mt-1">
+                <div 
+                  className={cn(
+                    "h-full transition-all",
+                    archRec.historicalSuccessRate >= 60 ? 'bg-accent' :
+                    archRec.historicalSuccessRate >= 40 ? 'bg-yellow-500' :
+                    'bg-destructive'
+                  )}
+                  style={{ width: `${archRec.historicalSuccessRate}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -486,30 +670,54 @@ function renderAgentSpecificData(rec: DetailedAgentRecommendation) {
     case 'investor': {
       const invRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'investor' }>;
       return (
-        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
-          <span className="text-xs text-muted-foreground">Retorno Estimado</span>
-          <span className="font-mono text-sm font-semibold text-primary">
-            +{invRec.estimatedReturn.toFixed(1)}%
-          </span>
+        <div className="p-4 rounded-lg bg-primary/10 border-2 border-primary/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Propuesta de Inversión</p>
+              <p className="font-mono text-sm">
+                <Badge variant="default" className="mr-2">{invRec.proposedAction}</Badge>
+                {invRec.proposedAsset}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground mb-1">Retorno Estimado</p>
+              <p className="font-mono text-xl font-bold text-primary">
+                +{invRec.estimatedReturn.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Importe</span>
+              <span className="font-mono text-sm font-semibold">{formatCurrency(invRec.proposedAmount)}</span>
+            </div>
+          </div>
         </div>
       );
     }
     case 'director': {
       const dirRec = rec as Extract<DetailedAgentRecommendation, { agentId: 'director' }>;
       return (
-        <div className="p-4 rounded-lg bg-accent/10 border border-accent/30">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="p-4 rounded-lg bg-accent/10 border-2 border-accent/30">
+          <div className="flex items-center gap-2 mb-3">
+            <User size={20} className="text-accent" weight="duotone" />
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Decisión Final del Director</p>
+          </div>
+          <div className="flex items-center justify-between mb-3">
             <Badge 
               variant={dirRec.finalDecision === 'approved' ? 'default' : 'destructive'}
-              className="text-xs"
+              className="text-sm px-3 py-1"
             >
-              {dirRec.finalDecision === 'approved' ? 'APROBADA' : 'RECHAZADA'}
+              {dirRec.finalDecision === 'approved' ? '✓ APROBADA' : '✗ RECHAZADA'}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              Confianza Combinada: {Math.round(dirRec.combinedConfidence)}%
-            </span>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Confianza Combinada</p>
+              <p className="font-mono text-lg font-bold">{Math.round(dirRec.combinedConfidence)}%</p>
+            </div>
           </div>
-          <p className="text-sm text-foreground/90">{dirRec.explanation}</p>
+          <div className="p-3 rounded-md bg-background/50 border border-border/50">
+            <p className="text-sm text-foreground/90 leading-relaxed">{dirRec.explanation}</p>
+          </div>
         </div>
       );
     }
