@@ -121,26 +121,26 @@ export function SettingsModal({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] max-w-[1400px] h-[85vh] p-0 gap-0">
+      <DialogContent className="w-[90vw] max-w-[1400px] h-[85vh] p-0 gap-0 overflow-hidden">
         <div className="flex h-full">
-          <div className="w-[20%] min-w-[220px] border-r border-border bg-card/30 backdrop-blur-sm flex flex-col">
-            <div className="p-6 border-b border-border">
+          <div className="w-[22%] min-w-[240px] border-r border-border bg-card/40 backdrop-blur-sm flex flex-col">
+            <div className="p-6 border-b border-border/50">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-heading font-bold text-xl">CONFIGURACIÓN</h2>
+                <h2 className="font-heading font-bold text-xl tracking-tight">CONFIGURACIÓN</h2>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-background/60 transition-colors"
                   onClick={() => onOpenChange(false)}
                 >
                   <X size={20} />
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">Sistema Aurora Capital</p>
+              <p className="text-xs text-muted-foreground/80">Sistema Aurora Capital</p>
             </div>
             
             <ScrollArea className="flex-1">
-              <nav className="p-3 space-y-1">
+              <nav className="p-4 space-y-1.5">
                 {CATEGORIES.map((category) => {
                   const Icon = category.icon;
                   const isSelected = selectedCategory === category.id;
@@ -151,30 +151,37 @@ export function SettingsModal({
                       onClick={() => !category.comingSoon && setSelectedCategory(category.id)}
                       disabled={category.comingSoon}
                       className={cn(
-                        "w-full flex items-start gap-3 p-3 rounded-lg transition-all text-left",
+                        "w-full flex items-start gap-3 p-3.5 rounded-lg transition-all text-left group",
                         isSelected 
-                          ? "bg-primary/10 border border-primary" 
+                          ? "bg-primary/15 border border-primary shadow-sm" 
                           : category.comingSoon
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-background/50"
+                          ? "opacity-40 cursor-not-allowed"
+                          : "hover:bg-background/60 hover:border hover:border-border/50"
                       )}
                     >
-                      <Icon size={20} weight={isSelected ? "fill" : "regular"} className={isSelected ? "text-primary mt-0.5" : "text-muted-foreground mt-0.5"} />
+                      <Icon 
+                        size={20} 
+                        weight={isSelected ? "fill" : "regular"} 
+                        className={cn(
+                          "mt-0.5 transition-colors flex-shrink-0",
+                          isSelected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                        )} 
+                      />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-1">
                           <p className={cn(
-                            "text-sm font-medium",
+                            "text-sm font-semibold",
                             isSelected ? "text-primary" : "text-foreground"
                           )}>
                             {category.label}
                           </p>
                           {category.comingSoon && (
-                            <Badge variant="outline" className="text-xs py-0 h-4 text-muted-foreground">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-muted-foreground/70 border-muted-foreground/30">
                               Próximamente
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                        <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed">
                           {category.description}
                         </p>
                       </div>
@@ -185,7 +192,7 @@ export function SettingsModal({
             </ScrollArea>
           </div>
           
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 bg-background/30">
             <ScrollArea className="flex-1">
               <div className="p-8">
                 {selectedCategory === 'general' && (
@@ -243,16 +250,16 @@ function GeneralSettings({ config, onSimulationToggle }: {
 }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-heading font-bold text-2xl mb-2">General</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="pb-2">
+        <h3 className="font-heading font-bold text-3xl mb-2 tracking-tight">General</h3>
+        <p className="text-sm text-muted-foreground/80">
           Configuración básica del sistema de trading autónomo
         </p>
       </div>
       
       <div className="grid grid-cols-2 gap-6">
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">MODO DE OPERACIÓN</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">MODO DE OPERACIÓN</h4>
           
           <div className="space-y-6">
             <div className="flex items-start justify-between gap-4">
@@ -288,8 +295,8 @@ function GeneralSettings({ config, onSimulationToggle }: {
           </div>
         </Card>
         
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">INTEGRACIONES</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">INTEGRACIONES</h4>
           
           <div className="space-y-4">
             <div className="p-4 bg-background/50 rounded-lg">
@@ -326,9 +333,9 @@ function AgentsSettings({
 }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-heading font-bold text-2xl mb-2">Agentes</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="pb-2">
+        <h3 className="font-heading font-bold text-3xl mb-2 tracking-tight">Agentes</h3>
+        <p className="text-sm text-muted-foreground/80">
           Gestión completa de agentes, roles, jerarquías y configuración de modelos LLM
         </p>
       </div>
@@ -346,16 +353,16 @@ function AgentsSettings({
 function ConsensusSettings({ config }: { config: SystemConfig }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-heading font-bold text-2xl mb-2">Consenso</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="pb-2">
+        <h3 className="font-heading font-bold text-3xl mb-2 tracking-tight">Consenso</h3>
+        <p className="text-sm text-muted-foreground/80">
           Sistema de votación, vetos y toma de decisiones colectivas
         </p>
       </div>
       
       <div className="grid grid-cols-2 gap-6">
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">CONFIGURACIÓN DE CONSENSO</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">CONFIGURACIÓN DE CONSENSO</h4>
           
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
@@ -396,8 +403,8 @@ function ConsensusSettings({ config }: { config: SystemConfig }) {
           </div>
         </Card>
         
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">AGENTES CON PODER DE VETO</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">AGENTES CON PODER DE VETO</h4>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
@@ -426,16 +433,16 @@ function ConsensusSettings({ config }: { config: SystemConfig }) {
 function TradingSettings({ config }: { config: SystemConfig }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-heading font-bold text-2xl mb-2">Trading</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="pb-2">
+        <h3 className="font-heading font-bold text-3xl mb-2 tracking-tight">Trading</h3>
+        <p className="text-sm text-muted-foreground/80">
           Parámetros de riesgo, límites de operación y protecciones
         </p>
       </div>
       
       <div className="grid grid-cols-2 gap-6">
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">PARÁMETROS DE RIESGO</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">PARÁMETROS DE RIESGO</h4>
           
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -486,8 +493,8 @@ function TradingSettings({ config }: { config: SystemConfig }) {
           </div>
         </Card>
         
-        <Card className="p-6 bg-card/50 backdrop-blur-sm">
-          <h4 className="font-heading font-semibold text-lg mb-4">PROTECCIONES ACTIVAS</h4>
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
+          <h4 className="font-heading font-semibold text-base mb-5 tracking-wide text-foreground/90">PROTECCIONES ACTIVAS</h4>
           
           <div className="space-y-3">
             <div className="flex items-center gap-2 p-3 bg-accent/10 border border-accent/30 rounded-lg">
@@ -516,23 +523,23 @@ function TradingSettings({ config }: { config: SystemConfig }) {
 function ComingSoonPanel({ category }: { category: string }) {
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-heading font-bold text-2xl mb-2">{category}</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="pb-2">
+        <h3 className="font-heading font-bold text-3xl mb-2 tracking-tight">{category}</h3>
+        <p className="text-sm text-muted-foreground/80">
           Esta sección estará disponible próximamente
         </p>
       </div>
       
-      <Card className="p-12 bg-card/50 backdrop-blur-sm text-center">
+      <Card className="p-12 bg-card/50 backdrop-blur-sm text-center border-border/50">
         <div className="max-w-md mx-auto space-y-4">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-            <Gear size={32} className="text-primary" />
+            <Gear size={32} className="text-primary/60" />
           </div>
           <h4 className="font-heading font-semibold text-xl">Próximamente</h4>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground/70">
             La configuración de {category} se encuentra en desarrollo y estará disponible en futuras actualizaciones.
           </p>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-muted-foreground/30">
             En desarrollo
           </Badge>
         </div>
