@@ -3,16 +3,13 @@ import { useKV } from '@github/spark/hooks';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AgentCard } from '@/components/AgentCard';
 import { SurvivalGauge } from '@/components/SurvivalGauge';
 import { Sparkline } from '@/components/Sparkline';
 import { DecisionCenter } from '@/components/DecisionCenter';
 import { ProductionDecisionCenter } from '@/components/ProductionDecisionCenter';
-import { AgentAssignmentConfig } from '@/components/AgentAssignmentConfig';
 import { LearningDashboard } from '@/components/LearningDashboard';
 import { EnhancedConsensusEngine } from '@/components/EnhancedConsensusEngine';
 import { EnvironmentSwitcher } from '@/components/EnvironmentSwitcher';
@@ -23,7 +20,9 @@ import { MarketIntelligenceCenter } from '@/components/MarketIntelligenceCenter'
 import { CapitalFlowEngine } from '@/components/CapitalFlowEngine';
 import { GlobalOpportunityScanner } from '@/components/GlobalOpportunityScanner';
 import { MacroEconomyDashboard } from '@/components/MacroEconomyDashboard';
-import { Bell, TrendUp, TrendDown, Circle } from '@phosphor-icons/react';
+import { NavigationMenu } from '@/components/NavigationMenu';
+import { SettingsModal } from '@/components/SettingsModal';
+import { Bell, TrendUp, TrendDown, Circle, Gear } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Agent, Operation, MarketPosition, NewsItem, InvestmentProposal, SystemConfig, AgentType, OrganizationalProfile, LearningEngineState, EnvironmentType, RealTradingConfirmation } from '@/lib/types';
 import { 
@@ -144,6 +143,8 @@ function App() {
   
   const [proposal, setProposal] = useState<InvestmentProposal | null>(null);
   const [showRealConfirmation, setShowRealConfirmation] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentTab, setCurrentTab] = useState('dashboard');
   const [realTradingConfirmation, setRealTradingConfirmation] = useKV<RealTradingConfirmation | null>(
     'aurora-real-trading-confirmation',
     null
@@ -234,7 +235,7 @@ function App() {
     setConfig((prev) => prev ? { ...prev, simulationMode: enabled } : DEFAULT_CONFIG);
   };
   
-  const handleUpdateAgent = (agentId: AgentType, updates: Partial<Agent>) => {
+  const handleUpdateAgent = (agentId: string, updates: Partial<Agent>) => {
     setAgents((prevAgents) => 
       prevAgents ? prevAgents.map(agent => 
         agent.id === agentId ? { ...agent, ...updates } : agent
@@ -352,9 +353,19 @@ function App() {
         onCancel={() => setShowRealConfirmation(false)}
       />
       
+      <SettingsModal
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        config={config}
+        agents={agents}
+        onSimulationToggle={handleSimulationToggle}
+        onUpdateAgent={handleUpdateAgent}
+        onProfileChange={handleProfileChange}
+      />
+      
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <div className="container mx-auto px-4 py-6 space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6 text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
@@ -391,227 +402,223 @@ function App() {
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
               <Bell size={20} />
             </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => setShowSettings(true)}
+            >
+              <Gear size={20} />
+            </Button>
           </div>
         </header>
         
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="bg-card/50 backdrop-blur-sm border border-border">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="intelligence">Market Intelligence</TabsTrigger>
-            <TabsTrigger value="opportunities">Global Opportunities</TabsTrigger>
-            <TabsTrigger value="capitalflow">Capital Flow</TabsTrigger>
-            <TabsTrigger value="macro">Macro Economy</TabsTrigger>
-            <TabsTrigger value="environments">Entornos</TabsTrigger>
-            <TabsTrigger value="consensus">Consensus</TabsTrigger>
-            <TabsTrigger value="learning">Learning</TabsTrigger>
-            <TabsTrigger value="production">Producción</TabsTrigger>
-            <TabsTrigger value="decisions">Decisions</TabsTrigger>
-            <TabsTrigger value="market">Mercado</TabsTrigger>
-            <TabsTrigger value="agents">Agentes</TabsTrigger>
-            <TabsTrigger value="history">Historial</TabsTrigger>
-            <TabsTrigger value="settings">Config</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm">
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Total</p>
-                    <p className="font-mono font-bold text-3xl text-foreground">{formatCurrency(currentCapital)}</p>
-                    <p className={cn(
-                      "text-sm font-medium flex items-center gap-1 mt-1",
-                      capitalChange >= 0 ? "text-accent" : "text-destructive"
-                    )}>
-                      {capitalChange >= 0 ? <TrendUp size={16} /> : <TrendDown size={16} />}
-                      {formatPercent(capitalChange)}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Reserva Supervivencia</p>
-                    <p className="font-mono font-bold text-3xl text-warning">{formatCurrency(survivalReserve)}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{config.survivalReservePercent}% del capital</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Operativo</p>
-                    <p className="font-mono font-bold text-3xl text-primary">{formatCurrency(currentCapital - survivalReserve)}</p>
-                    <p className="text-sm text-muted-foreground mt-1">70% del capital</p>
-                  </div>
-                </div>
-                
-                <Separator className="my-6" />
-                
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Estado del Sistema</p>
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-sm px-3 py-1",
-                      systemHealth >= 80 ? "border-accent text-accent" :
-                      systemHealth >= 50 ? "border-yellow-400 text-yellow-400" :
-                      "border-destructive text-destructive"
-                    )}
-                  >
-                    {systemHealth >= 80 ? 'ÓPTIMO' : systemHealth >= 50 ? 'ESTABLE' : 'EN RIESGO'}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-2">Todos los sistemas activos</p>
-                </div>
-                
-                <div className="mt-6 h-32">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Rendimiento</p>
-                  <Sparkline data={performanceData} positive={capitalChange >= 0} className="h-full" />
-                </div>
-              </Card>
-              
-              <SurvivalGauge 
-                health={systemHealth}
-                reserveAmount={survivalReserve}
-                totalCapital={config.totalCapital}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {agents.slice(0, 4).map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
-              ))}
-            </div>
-            
-            {proposal && (
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/30">
-                <h3 className="font-heading font-semibold text-lg mb-4">PROPUESTA DE INVERSIÓN ACTUAL</h3>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Activo</p>
-                        <p className="font-mono font-bold text-lg">{proposal.asset}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Acción</p>
-                        <Badge variant={proposal.action === 'BUY' ? 'default' : 'destructive'} className="text-sm">
-                          {proposal.action === 'BUY' ? 'COMPRAR' : 'VENDER'}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Importe Propuesto</p>
-                        <p className="font-mono font-semibold text-lg">{formatCurrency(proposal.amount)}</p>
-                      </div>
+        <NavigationMenu currentTab={currentTab} onTabChange={setCurrentTab} />
+        
+        <div className="space-y-6">
+          {currentTab === 'dashboard' && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm">
+                  <div className="grid grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Total</p>
+                      <p className="font-mono font-bold text-3xl text-foreground">{formatCurrency(currentCapital)}</p>
+                      <p className={cn(
+                        "text-sm font-medium flex items-center gap-1 mt-1",
+                        capitalChange >= 0 ? "text-accent" : "text-destructive"
+                      )}>
+                        {capitalChange >= 0 ? <TrendUp size={16} /> : <TrendDown size={16} />}
+                        {formatPercent(capitalChange)}
+                      </p>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Confianza Global</p>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{ width: `${proposal.globalConfidence}%` }}
-                            />
-                          </div>
-                          <span className="font-mono text-sm font-semibold">{Math.round(proposal.globalConfidence)}%</span>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Reserva Supervivencia</p>
+                      <p className="font-mono font-bold text-3xl text-warning">{formatCurrency(survivalReserve)}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{config.survivalReservePercent}% del capital</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Capital Operativo</p>
+                      <p className="font-mono font-bold text-3xl text-primary">{formatCurrency(currentCapital - survivalReserve)}</p>
+                      <p className="text-sm text-muted-foreground mt-1">70% del capital</p>
+                    </div>
+                  </div>
+                  
+                  <Separator className="my-6" />
+                  
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Estado del Sistema</p>
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "text-sm px-3 py-1",
+                        systemHealth >= 80 ? "border-accent text-accent" :
+                        systemHealth >= 50 ? "border-yellow-400 text-yellow-400" :
+                        "border-destructive text-destructive"
+                      )}
+                    >
+                      {systemHealth >= 80 ? 'ÓPTIMO' : systemHealth >= 50 ? 'ESTABLE' : 'EN RIESGO'}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-2">Todos los sistemas activos</p>
+                  </div>
+                  
+                  <div className="mt-6 h-32">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Rendimiento</p>
+                    <Sparkline data={performanceData} positive={capitalChange >= 0} className="h-full" />
+                  </div>
+                </Card>
+                
+                <SurvivalGauge 
+                  health={systemHealth}
+                  reserveAmount={survivalReserve}
+                  totalCapital={config.totalCapital}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {agents.slice(0, 4).map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
+              </div>
+              
+              {proposal && (
+                <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/30">
+                  <h3 className="font-heading font-semibold text-lg mb-4">PROPUESTA DE INVERSIÓN ACTUAL</h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Activo</p>
+                          <p className="font-mono font-bold text-lg">{proposal.asset}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Acción</p>
+                          <Badge variant={proposal.action === 'BUY' ? 'default' : 'destructive'} className="text-sm">
+                            {proposal.action === 'BUY' ? 'COMPRAR' : 'VENDER'}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Importe Propuesto</p>
+                          <p className="font-mono font-semibold text-lg">{formatCurrency(proposal.amount)}</p>
                         </div>
                       </div>
                       
-                      <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Riesgo Estimado</p>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-yellow-500 rounded-full transition-all duration-500"
-                              style={{ width: `${(proposal.risk / 5) * 100}%` }}
-                            />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Confianza Global</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary rounded-full transition-all duration-500"
+                                style={{ width: `${proposal.globalConfidence}%` }}
+                              />
+                            </div>
+                            <span className="font-mono text-sm font-semibold">{Math.round(proposal.globalConfidence)}%</span>
                           </div>
-                          <span className="font-mono text-sm font-semibold">{proposal.risk.toFixed(1)}%</span>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Riesgo Estimado</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-yellow-500 rounded-full transition-all duration-500"
+                                style={{ width: `${(proposal.risk / 5) * 100}%` }}
+                              />
+                            </div>
+                            <span className="font-mono text-sm font-semibold">{proposal.risk.toFixed(1)}%</span>
+                          </div>
                         </div>
                       </div>
+                      
+                      {proposal.survivalVeto && (
+                        <div className="p-4 bg-warning/10 border-2 border-warning/50 rounded-lg">
+                          <p className="text-sm font-semibold text-warning flex items-center gap-2">
+                            <Circle size={12} weight="fill" className="animate-pulse" />
+                            VETO DE SUPERVIVENCIA
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Este agente tiene autoridad absoluta para bloquear cualquier operación
+                          </p>
+                        </div>
+                      )}
                     </div>
                     
-                    {proposal.survivalVeto && (
-                      <div className="p-4 bg-warning/10 border-2 border-warning/50 rounded-lg">
-                        <p className="text-sm font-semibold text-warning flex items-center gap-2">
-                          <Circle size={12} weight="fill" className="animate-pulse" />
-                          VETO DE SUPERVIVENCIA
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Este agente tiene autoridad absoluta para bloquear cualquier operación
-                        </p>
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Decisión Final</p>
+                      <Badge 
+                        variant="outline" 
+                        className="text-sm border-yellow-400 text-yellow-400 mb-4"
+                      >
+                        Pendiente
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mb-3">Evaluación del Director</p>
+                      
+                      <div className="flex flex-col gap-2">
+                        <Button 
+                          onClick={handleApproveProposal}
+                          className="w-full"
+                          disabled={proposal.survivalVeto}
+                        >
+                          {proposal.survivalVeto ? 'Bloqueado por Veto' : 'Aprobar'}
+                        </Button>
+                        <Button 
+                          onClick={handleRejectProposal}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Cancelar
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Decisión Final</p>
-                    <Badge 
-                      variant="outline" 
-                      className="text-sm border-yellow-400 text-yellow-400 mb-4"
-                    >
-                      Pendiente
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mb-3">Evaluación del Director</p>
-                    
-                    <div className="flex flex-col gap-2">
-                      <Button 
-                        onClick={handleApproveProposal}
-                        className="w-full"
-                        disabled={proposal.survivalVeto}
-                      >
-                        {proposal.survivalVeto ? 'Bloqueado por Veto' : 'Aprobar'}
-                      </Button>
-                      <Button 
-                        onClick={handleRejectProposal}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        Cancelar
-                      </Button>
                     </div>
                   </div>
+                </Card>
+              )}
+              
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <h3 className="font-heading font-semibold text-lg mb-4">OPERACIONES RECIENTES</h3>
+                <div className="space-y-2">
+                  {operations.slice(0, 5).map((op) => (
+                    <div key={op.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant={op.action === 'BUY' ? 'default' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {op.action}
+                        </Badge>
+                        <span className="font-mono text-sm font-medium">{op.asset}</span>
+                        <span className="text-xs text-muted-foreground">{formatDate(op.date)}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-sm">{formatCurrency(op.amount)}</span>
+                        {op.result !== undefined && (
+                          <span className={cn(
+                            "font-mono text-sm font-semibold",
+                            op.result >= 0 ? "text-accent" : "text-destructive"
+                          )}>
+                            {formatPercent((op.result / op.amount) * 100)}
+                          </span>
+                        )}
+                        <Badge 
+                          variant={op.status === 'executed' ? 'default' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {op.status === 'executed' ? 'Ejecutado' : 'Vetado'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </Card>
-            )}
-            
-            <Card className="p-6 bg-card/50 backdrop-blur-sm">
-              <h3 className="font-heading font-semibold text-lg mb-4">OPERACIONES RECIENTES</h3>
-              <div className="space-y-2">
-                {operations.slice(0, 5).map((op) => (
-                  <div key={op.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Badge 
-                        variant={op.action === 'BUY' ? 'default' : 'destructive'}
-                        className="text-xs"
-                      >
-                        {op.action}
-                      </Badge>
-                      <span className="font-mono text-sm font-medium">{op.asset}</span>
-                      <span className="text-xs text-muted-foreground">{formatDate(op.date)}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm">{formatCurrency(op.amount)}</span>
-                      {op.result !== undefined && (
-                        <span className={cn(
-                          "font-mono text-sm font-semibold",
-                          op.result >= 0 ? "text-accent" : "text-destructive"
-                        )}>
-                          {formatPercent((op.result / op.amount) * 100)}
-                        </span>
-                      )}
-                      <Badge 
-                        variant={op.status === 'executed' ? 'default' : 'destructive'}
-                        className="text-xs"
-                      >
-                        {op.status === 'executed' ? 'Ejecutado' : 'Vetado'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </TabsContent>
+            </>
+          )}
           
-          <TabsContent value="intelligence">
+          {currentTab === 'intelligence' && (
             <MarketIntelligenceCenter
               cryptoAssets={cryptoAssets}
               stockAssets={stockAssets}
@@ -621,13 +628,13 @@ function App() {
               indexAssets={indexAssets}
               realEstateAssets={realEstateAssets}
             />
-          </TabsContent>
+          )}
 
-          <TabsContent value="opportunities">
+          {currentTab === 'opportunities' && (
             <GlobalOpportunityScanner opportunities={globalOpportunities} />
-          </TabsContent>
+          )}
 
-          <TabsContent value="capitalflow">
+          {currentTab === 'capitalflow' && (
             <CapitalFlowEngine
               capitalFlows={capitalFlows}
               sectorRotation={sectorRotation}
@@ -637,146 +644,148 @@ function App() {
                 indicators: ['VIX Low', 'High Yield Spreads Tight', 'Risk-On Sentiment'],
               }}
             />
-          </TabsContent>
+          )}
 
-          <TabsContent value="macro">
+          {currentTab === 'macro' && (
             <MacroEconomyDashboard macroData={macroData} />
-          </TabsContent>
+          )}
 
-          <TabsContent value="consensus">
+          {currentTab === 'consensus' && (
             <EnhancedConsensusEngine 
               agents={agents}
               config={config}
               currentCapital={currentCapital}
               learningState={learningState}
             />
-          </TabsContent>
+          )}
 
-          <TabsContent value="learning">
+          {currentTab === 'learning' && (
             <LearningDashboard learningState={learningState} />
-          </TabsContent>
+          )}
           
-          <TabsContent value="production">
+          {currentTab === 'production' && (
             <ProductionDecisionCenter 
               agents={agents}
               config={config}
               currentCapital={currentCapital}
             />
-          </TabsContent>
+          )}
           
-          <TabsContent value="decisions">
+          {currentTab === 'decisions' && (
             <DecisionCenter 
               agents={agents}
               config={config}
               currentCapital={currentCapital}
             />
-          </TabsContent>
+          )}
           
-          <TabsContent value="environments" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm">
-                <h3 className="font-heading font-semibold text-lg mb-4">RESUMEN DE MERCADO</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Sentimiento General</span>
-                    <Badge 
-                      variant="outline"
-                      className={cn(
-                        sentiment.overall === 'positive' ? 'border-accent text-accent' :
-                        sentiment.overall === 'negative' ? 'border-destructive text-destructive' :
-                        'border-muted text-muted-foreground'
-                      )}
-                    >
-                      {sentiment.overall === 'positive' ? 'Positivo' : 
-                       sentiment.overall === 'negative' ? 'Negativo' : 'Neutral'}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{sentiment.summary}</p>
-                  <Separator />
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Capitalización (24h)</span>
-                      <span className="font-mono font-semibold">{formatCurrency(totalMarketCap)}</span>
+          {currentTab === 'market' && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2 p-6 bg-card/50 backdrop-blur-sm">
+                  <h3 className="font-heading font-semibold text-lg mb-4">RESUMEN DE MERCADO</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Sentimiento General</span>
+                      <Badge 
+                        variant="outline"
+                        className={cn(
+                          sentiment.overall === 'positive' ? 'border-accent text-accent' :
+                          sentiment.overall === 'negative' ? 'border-destructive text-destructive' :
+                          'border-muted text-muted-foreground'
+                        )}
+                      >
+                        {sentiment.overall === 'positive' ? 'Positivo' : 
+                         sentiment.overall === 'negative' ? 'Negativo' : 'Neutral'}
+                      </Badge>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Volumen 24h</span>
-                      <span className="font-mono font-semibold">{formatCurrency(totalMarket24h * 10)}</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-6 bg-card/50 backdrop-blur-sm">
-                <h3 className="font-heading font-semibold text-lg mb-4">NOTICIAS RECIENTES</h3>
-                <div className="space-y-3">
-                  {news.map((item) => (
-                    <div key={item.id} className="p-3 bg-background/50 rounded-lg">
-                      <p className="text-xs text-foreground line-clamp-2 mb-1">{item.title}</p>
-                      <div className="flex items-center justify-between">
-                        <Badge 
-                          variant="outline"
-                          className={cn(
-                            "text-xs",
-                            item.sentiment === 'positive' ? 'border-accent/50 text-accent' :
-                            item.sentiment === 'negative' ? 'border-destructive/50 text-destructive' :
-                            'border-muted/50 text-muted-foreground'
-                          )}
-                        >
-                          {item.sentiment}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{item.timestamp}</span>
+                    <p className="text-sm text-muted-foreground">{sentiment.summary}</p>
+                    <Separator />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Capitalización (24h)</span>
+                        <span className="font-mono font-semibold">{formatCurrency(totalMarketCap)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Volumen 24h</span>
+                        <span className="font-mono font-semibold">{formatCurrency(totalMarket24h * 10)}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-            
-            <Card className="p-6 bg-card/50 backdrop-blur-sm">
-              <h3 className="font-heading font-semibold text-lg mb-4">ACTIVOS PRINCIPALES</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Activo</TableHead>
-                    <TableHead>Precio</TableHead>
-                    <TableHead>24h</TableHead>
-                    <TableHead>Tendencia</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {marketPositions.map((position) => (
-                    <TableRow key={position.asset}>
-                      <TableCell className="font-mono font-medium">{position.asset}</TableCell>
-                      <TableCell className="font-mono">{formatCurrency(position.currentPrice)}</TableCell>
-                      <TableCell>
-                        <span className={cn(
-                          "font-mono font-semibold",
-                          position.change24h >= 0 ? "text-accent" : "text-destructive"
-                        )}>
-                          {formatPercent(position.change24h)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-8 w-24">
-                          <Sparkline data={position.trend} positive={position.change24h >= 0} />
+                  </div>
+                </Card>
+                
+                <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                  <h3 className="font-heading font-semibold text-lg mb-4">NOTICIAS RECIENTES</h3>
+                  <div className="space-y-3">
+                    {news.map((item) => (
+                      <div key={item.id} className="p-3 bg-background/50 rounded-lg">
+                        <p className="text-xs text-foreground line-clamp-2 mb-1">{item.title}</p>
+                        <div className="flex items-center justify-between">
+                          <Badge 
+                            variant="outline"
+                            className={cn(
+                              "text-xs",
+                              item.sentiment === 'positive' ? 'border-accent/50 text-accent' :
+                              item.sentiment === 'negative' ? 'border-destructive/50 text-destructive' :
+                              'border-muted/50 text-muted-foreground'
+                            )}
+                          >
+                            {item.sentiment}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{item.timestamp}</span>
                         </div>
-                      </TableCell>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+              
+              <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                <h3 className="font-heading font-semibold text-lg mb-4">ACTIVOS PRINCIPALES</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Activo</TableHead>
+                      <TableHead>Precio</TableHead>
+                      <TableHead>24h</TableHead>
+                      <TableHead>Tendencia</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
+                  </TableHeader>
+                  <TableBody>
+                    {marketPositions.map((position) => (
+                      <TableRow key={position.asset}>
+                        <TableCell className="font-mono font-medium">{position.asset}</TableCell>
+                        <TableCell className="font-mono">{formatCurrency(position.currentPrice)}</TableCell>
+                        <TableCell>
+                          <span className={cn(
+                            "font-mono font-semibold",
+                            position.change24h >= 0 ? "text-accent" : "text-destructive"
+                          )}>
+                            {formatPercent(position.change24h)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-8 w-24">
+                            <Sparkline data={position.trend} positive={position.change24h >= 0} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            </>
+          )}
           
-          <TabsContent value="agents" className="space-y-6">
+          {currentTab === 'agents' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map((agent) => (
                 <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
-          </TabsContent>
+          )}
           
-          <TabsContent value="history" className="space-y-6">
+          {currentTab === 'history' && (
             <Card className="p-6 bg-card/50 backdrop-blur-sm">
               <h3 className="font-heading font-semibold text-lg mb-4">HISTORIAL DE OPERACIONES</h3>
               <Table>
@@ -828,132 +837,62 @@ function App() {
                 </TableBody>
               </Table>
             </Card>
-          </TabsContent>
+          )}
           
-          <TabsContent value="settings" className="space-y-6">
-            <Card className="p-6 bg-card/50 backdrop-blur-sm">
-              <h3 className="font-heading font-semibold text-lg mb-4">AGENT ASSIGNMENT & ORGANIZATION</h3>
-              <AgentAssignmentConfig 
-                agents={agents}
-                onUpdateAgent={handleUpdateAgent}
-                onProfileChange={handleProfileChange}
-                currentProfile={config.organization?.profile ?? 'balanced'}
+          {currentTab === 'environments' && (
+            <>
+              <EnvironmentDashboard
+                environments={environmentStats}
+                currentEnvironment={currentEnvironment!}
+                onSelectEnvironment={handleEnvironmentSwitch}
               />
-            </Card>
-            
-            <Card className="p-6 bg-card/50 backdrop-blur-sm">
-              <h3 className="font-heading font-semibold text-lg mb-4">CONFIGURACIÓN DEL SISTEMA</h3>
               
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Modo de Operación</p>
-                    <p className="text-sm text-muted-foreground">
-                      Ejecutar en simulación sin riesgo real
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={config.simulationMode}
-                    onCheckedChange={handleSimulationToggle}
-                  />
-                </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StrategyPromotionPanel
+                  maturityStatus={currentMaturityStatus}
+                  onPromote={handlePromoteStrategy}
+                />
                 
-                <Separator />
-                
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2">Capital Inicial</p>
-                    <p className="font-mono text-lg">{formatCurrency(config.totalCapital)}</p>
+                <Card className="p-6 bg-card/50 backdrop-blur-sm">
+                  <h3 className="font-heading font-bold text-xl mb-4">ENVIRONMENT FEATURES</h3>
+                  <div className="space-y-4">
+                    {(Object.keys(ENVIRONMENT_CONFIGS) as EnvironmentType[]).map((envKey) => {
+                      const envConfig = ENVIRONMENT_CONFIGS[envKey];
+                      return (
+                        <div key={envKey} className="p-4 bg-background/50 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xl">{envConfig.icon}</span>
+                            <span className="font-heading font-bold">{envConfig.name}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">{envConfig.description}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {envConfig.features.realMarketData && (
+                              <Badge variant="secondary" className="text-xs">Datos Reales</Badge>
+                            )}
+                            {envConfig.features.updatesReputation && (
+                              <Badge variant="secondary" className="text-xs">Actualiza Reputación</Badge>
+                            )}
+                            {envConfig.features.generatesOrders && (
+                              <Badge variant="outline" className="text-xs border-warning text-warning">
+                                Genera Órdenes
+                              </Badge>
+                            )}
+                            {envConfig.features.executesOrders && (
+                              <Badge variant="destructive" className="text-xs">Ejecuta Real</Badge>
+                            )}
+                            {envConfig.features.realMoney && (
+                              <Badge variant="destructive" className="text-xs">Capital Real</Badge>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium mb-2">Reserva de Supervivencia</p>
-                    <p className="font-mono text-lg">{config.survivalReservePercent}%</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium mb-2">Riesgo Máximo por Operación</p>
-                    <p className="font-mono text-lg">{config.maxRiskPerOperation}%</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm font-medium mb-2">Límite de Pérdida Diaria</p>
-                    <p className="font-mono text-lg">{config.dailyLossLimit}%</p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h4 className="font-medium mb-4">Integración Telegram</h4>
-                  <div className="p-4 bg-background/50 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-muted-foreground">Estado de Conexión</span>
-                      <Badge variant="outline" className="border-destructive/50 text-destructive">
-                        No conectado
-                      </Badge>
-                    </div>
-                    <Button variant="outline" className="w-full" disabled>
-                      Configurar
-                    </Button>
-                  </div>
-                </div>
+                </Card>
               </div>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="environments" className="space-y-6">
-            <EnvironmentDashboard
-              environments={environmentStats}
-              currentEnvironment={currentEnvironment!}
-              onSelectEnvironment={handleEnvironmentSwitch}
-            />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <StrategyPromotionPanel
-                maturityStatus={currentMaturityStatus}
-                onPromote={handlePromoteStrategy}
-              />
-              
-              <Card className="p-6 bg-card/50 backdrop-blur-sm">
-                <h3 className="font-heading font-bold text-xl mb-4">ENVIRONMENT FEATURES</h3>
-                <div className="space-y-4">
-                  {(Object.keys(ENVIRONMENT_CONFIGS) as EnvironmentType[]).map((envKey) => {
-                    const envConfig = ENVIRONMENT_CONFIGS[envKey];
-                    return (
-                      <div key={envKey} className="p-4 bg-background/50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xl">{envConfig.icon}</span>
-                          <span className="font-heading font-bold">{envConfig.name}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-2">{envConfig.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {envConfig.features.realMarketData && (
-                            <Badge variant="secondary" className="text-xs">Datos Reales</Badge>
-                          )}
-                          {envConfig.features.updatesReputation && (
-                            <Badge variant="secondary" className="text-xs">Actualiza Reputación</Badge>
-                          )}
-                          {envConfig.features.generatesOrders && (
-                            <Badge variant="outline" className="text-xs border-warning text-warning">
-                              Genera Órdenes
-                            </Badge>
-                          )}
-                          {envConfig.features.executesOrders && (
-                            <Badge variant="destructive" className="text-xs">Ejecuta Real</Badge>
-                          )}
-                          {envConfig.features.realMoney && (
-                            <Badge variant="destructive" className="text-xs">Capital Real</Badge>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </>
+          )}
+        </div>
       </div>
     </div>
     </>
