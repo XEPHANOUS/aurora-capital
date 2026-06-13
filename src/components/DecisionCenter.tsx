@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
 import { useKV } from '@github/spark/hooks';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,8 +18,7 @@ import {
   XCircle,
   Warning,
   ArrowRight,
-  ChartLine,
-  type Icon
+  ChartLine
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,7 +33,7 @@ import {
 } from '@/lib/mockData';
 import { DecisionFlowVisualizer } from '@/components/DecisionFlowVisualizer';
 
-const AGENT_ICONS: Record<string, Icon> = {
+const AGENT_ICONS: Record<string, ComponentType<any>> = {
   news: Brain,
   technical: ChartLine,
   risk: TrendUp,
