@@ -203,8 +203,8 @@ export function SettingsModal({
           </div>
           
           <div className="flex-1 flex flex-col min-w-0 bg-background/30 overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4 sm:p-6 lg:p-8 h-full">
+            <div className="flex-1 overflow-y-auto scrollbar-custom">
+              <div className="p-4 sm:p-6 lg:p-8">
                 {selectedCategory === 'general' && (
                   <GeneralSettings config={config} onSimulationToggle={onSimulationToggle} />
                 )}
@@ -342,7 +342,7 @@ function AgentsSettings({
   onProfileChange: (profile: OrganizationalProfile) => void;
 }) {
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="pb-4 flex-shrink-0">
         <h3 className="font-heading font-bold text-2xl sm:text-3xl mb-2 tracking-tight">Agentes</h3>
         <p className="text-sm text-muted-foreground/80">
@@ -350,7 +350,7 @@ function AgentsSettings({
         </p>
       </div>
       
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 overflow-hidden">
         <AgentAssignmentConfig
           agents={agents}
           onUpdateAgent={onUpdateAgent}

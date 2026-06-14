@@ -124,8 +124,8 @@ export function AgentAssignmentConfig({
   const Icon = AGENT_ICONS[agent.id];
   
   return (
-    <div className="flex flex-col h-full">
-      <Tabs defaultValue="assignment" className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
+      <Tabs defaultValue="assignment" className="flex flex-col h-full overflow-hidden">
         <TabsList className="bg-card/50 backdrop-blur-sm border border-border w-full justify-start overflow-x-auto flex-nowrap flex-shrink-0">
           <TabsTrigger value="assignment" className="whitespace-nowrap">Individual Assignment</TabsTrigger>
           <TabsTrigger value="organization" className="whitespace-nowrap">Organization Profiles</TabsTrigger>
@@ -133,11 +133,11 @@ export function AgentAssignmentConfig({
           <TabsTrigger value="influence" className="whitespace-nowrap">Influence System</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="assignment" className="flex-1 mt-6 min-h-0 flex flex-col">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 min-h-0">
-            <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col min-h-0">
+        <TabsContent value="assignment" className="flex-1 mt-6 overflow-hidden flex flex-col">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 overflow-hidden">
+            <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col overflow-hidden">
               <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide flex-shrink-0">Select Agent</h3>
-              <div className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0">
+              <div className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom">
                 {agents.map((a) => {
                   const AgIcon = AGENT_ICONS[a.id];
                   return (
@@ -165,7 +165,7 @@ export function AgentAssignmentConfig({
               </div>
             </Card>
             
-            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm flex flex-col min-h-0">
+            <Card className="xl:col-span-2 p-6 bg-card/50 backdrop-blur-sm flex flex-col overflow-hidden">
               <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <Icon size={24} className="text-primary" />
@@ -178,7 +178,7 @@ export function AgentAssignmentConfig({
               
               <Separator className="my-6 flex-shrink-0" />
               
-              <div className="space-y-4 overflow-y-auto pr-2 flex-1 min-h-0">
+              <div className="space-y-4 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom">
                 <div>
                   <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Agent Type</Label>
                   <div className="flex gap-2">
@@ -346,8 +346,8 @@ export function AgentAssignmentConfig({
           </div>
         </TabsContent>
         
-        <TabsContent value="organization" className="flex-1 mt-6 min-h-0 overflow-y-auto">
-          <div className="space-y-6">
+        <TabsContent value="organization" className="flex-1 mt-6 overflow-hidden">
+          <div className="space-y-6 h-full overflow-y-auto pr-2 scrollbar-custom">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(['conservative', 'balanced', 'aggressive', 'survival-first'] as OrganizationalProfile[]).map((profile) => (
                 <Card
@@ -419,12 +419,16 @@ export function AgentAssignmentConfig({
           </div>
         </TabsContent>
         
-        <TabsContent value="hierarchy" className="flex-1 mt-6 min-h-0 overflow-y-auto">
-          <OrganizationHierarchy agents={agents} />
+        <TabsContent value="hierarchy" className="flex-1 mt-6 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-2 scrollbar-custom">
+            <OrganizationHierarchy agents={agents} />
+          </div>
         </TabsContent>
         
-        <TabsContent value="influence" className="flex-1 mt-6 min-h-0 overflow-y-auto">
-          <InfluenceVisualization agents={agents} weights={currentWeights} />
+        <TabsContent value="influence" className="flex-1 mt-6 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-2 scrollbar-custom">
+            <InfluenceVisualization agents={agents} weights={currentWeights} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
