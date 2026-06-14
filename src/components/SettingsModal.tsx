@@ -342,15 +342,15 @@ function AgentsSettings({
   onProfileChange: (profile: OrganizationalProfile) => void;
 }) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="pb-2 flex-shrink-0">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="pb-4 flex-shrink-0">
         <h3 className="font-heading font-bold text-2xl sm:text-3xl mb-2 tracking-tight">Agentes</h3>
         <p className="text-sm text-muted-foreground/80">
           Gestión completa de agentes, roles, jerarquías y configuración de modelos LLM
         </p>
       </div>
       
-      <div className="flex-1 mt-6 min-h-0">
+      <div className="flex-1 overflow-hidden">
         <AgentAssignmentConfig
           agents={agents}
           onUpdateAgent={onUpdateAgent}

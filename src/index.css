@@ -134,3 +134,34 @@
     mask-composite: exclude;
   }
 }
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.35 0.04 250) oklch(0.14 0.015 250);
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: oklch(0.14 0.015 250);
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.04 250);
+    border-radius: 4px;
+    border: 2px solid oklch(0.14 0.015 250);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0.06 250);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: oklch(0.55 0.08 250);
+  }
+}
