@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +66,32 @@ export function AgentAssignmentConfig({
   currentProfile
 }: AgentAssignmentConfigProps) {
   const [selectedAgent, setSelectedAgent] = useState<AgentType>('director');
+  const agentListRef = useRef<HTMLDivElement>(null);
+  const agentConfigRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const checkScrollDimensions = () => {
+      if (agentListRef.current) {
+        console.log('=== AGENT LIST CONTAINER ===');
+        console.log('clientHeight:', agentListRef.current.clientHeight);
+        console.log('scrollHeight:', agentListRef.current.scrollHeight);
+        console.log('overflow-y:', window.getComputedStyle(agentListRef.current).overflowY);
+        console.log('max-height:', window.getComputedStyle(agentListRef.current).maxHeight);
+        console.log('height:', window.getComputedStyle(agentListRef.current).height);
+      }
+      if (agentConfigRef.current) {
+        console.log('=== AGENT CONFIG CONTAINER ===');
+        console.log('clientHeight:', agentConfigRef.current.clientHeight);
+        console.log('scrollHeight:', agentConfigRef.current.scrollHeight);
+        console.log('overflow-y:', window.getComputedStyle(agentConfigRef.current).overflowY);
+        console.log('max-height:', window.getComputedStyle(agentConfigRef.current).maxHeight);
+        console.log('height:', window.getComputedStyle(agentConfigRef.current).height);
+      }
+    };
+    
+    const timer = setTimeout(checkScrollDimensions, 500);
+    return () => clearTimeout(timer);
+  }, [selectedAgent]);
   
   const agent = agents.find(a => a.id === selectedAgent);
   if (!agent) return null;
@@ -137,7 +163,11 @@ export function AgentAssignmentConfig({
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 overflow-hidden">
             <Card className="p-4 bg-card/50 backdrop-blur-sm flex flex-col overflow-hidden">
               <h3 className="font-heading font-semibold text-sm mb-4 uppercase tracking-wide flex-shrink-0">Select Agent</h3>
-              <div className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom">
+              <div 
+                ref={agentListRef}
+                className="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom"
+                style={{ border: '2px solid red' }}
+              >
                 {agents.map((a) => {
                   const AgIcon = AGENT_ICONS[a.id];
                   return (
@@ -178,7 +208,11 @@ export function AgentAssignmentConfig({
               
               <Separator className="my-6 flex-shrink-0" />
               
-              <div className="space-y-4 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom">
+              <div 
+                ref={agentConfigRef}
+                className="space-y-4 overflow-y-auto pr-2 flex-1 min-h-0 scrollbar-custom"
+                style={{ border: '2px solid blue' }}
+              >
                 <div>
                   <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Agent Type</Label>
                   <div className="flex gap-2">
